@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revolución Colectiva - RPG de lucha contra la opresión</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(to bottom, #0c2461, #1e3799);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            margin: 0 auto;
+            border: 5px solid #f6b93b;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(246, 185, 59, 0.5);
+            background-color: #1a1a2e;
+        }
+
+        #gameCanvas {
+            display: block;
+            background-color: #162447;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(26, 26, 46, 0.95);
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+
+        .screen h1 {
+            color: #f6b93b;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #e55039;
+            line-height: 1.4;
+        }
+
+        .screen p {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: #dff9fb;
+            max-width: 700px;
+        }
+
+        .screen.hidden {
+            display: none;
+        }
+
+        .btn {
+            background-color: #e55039;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 0 #b33939;
+        }
+
+        .btn:hover {
+            background-color: #ff793f;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b33939;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .keyboard-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #f6b93b;
+            font-size: 0.7rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .keyboard-controls div {
+            margin: 5px 0;
+        }
+
+        .touch-controls {
+            display: none;
+            width: 100%;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 5px;
+        }
+
+        .d-pad button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            border-radius: 5px;
+        }
+
+        .d-pad .up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .d-pad .left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .d-pad .center {
+            grid-column: 2;
+            grid-row: 2;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .d-pad .right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .d-pad .down {
+            grid-column: 2;
+            grid-row: 3;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .action-buttons button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background-color: rgba(229, 80, 57, 0.8);
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+        }
+
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-size: 0.8rem;
+            min-width: 150px;
+        }
+
+        .hud-item span {
+            color: #f6b93b;
+        }
+
+        .boss-warning {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(229, 80, 57, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            text-align: center;
+            z-index: 20;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .screenshot-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(26, 188, 156, 0.8);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 rgba(22, 160, 133, 0.8);
+        }
+
+        .screenshot-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .screenshot-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .screenshot-notification {
+            position: absolute;
+            bottom: 90px;
+            right: 20px;
+            background-color: rgba(26, 188, 156, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            z-index: 5;
+            display: none;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            text-align: center;
+            max-width: 800px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .instructions h3 {
+            color: #f6b93b;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            list-style-type: none;
+            text-align: left;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                height: 500px;
+            }
+            
+            .screen h1 {
+                font-size: 1.8rem;
+            }
+            
+            .keyboard-controls {
+                display: none;
+            }
+            
+            .touch-controls {
+                display: flex;
+            }
+            
+            .hud-item {
+                font-size: 0.6rem;
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div class="screen" id="startScreen">
+            <h1>REVOLUCIÓN COLECTIVA</h1>
+            <p>El sistema opresor ha tomado el control. Recluta aliados en las calles, forma una turba poderosa y enfréntate a los jefes de la opresión.</p>
+            <p>¡Solo unidos podremos vencer!</p>
+            <button class="btn" id="startBtn">INICIAR REVOLUCIÓN</button>
+            <button class="btn" id="instructionsBtn">INSTRUCCIONES</button>
+        </div>
+        
+        <div class="screen hidden" id="instructionsScreen">
+            <h1>CÓMO JUGAR</h1>
+            <div style="text-align: left; max-width: 700px;">
+                <p><strong>OBJETIVO:</strong> Recluta seguidores para formar una turba y derrotar al jefe opresor.</p>
+                <p><strong>CONTROLES:</strong></p>
+                <ul>
+                    <li><span style="color:#f6b93b;">PC:</span> Usa las teclas WASD o flechas para moverte</li>
+                    <li><span style="color:#f6b93b;">MÓVIL:</span> Usa los controles táctiles en pantalla</li>
+                    <li><span style="color:#f6b93b;">RECLUTAR:</span> Acércate a los ciudadanos para sumarlos a tu causa</li>
+                    <li><span style="color:#f6b93b;">CAPTURA:</span> Toma capturas de pantalla (botón de cámara) para obtener power-ups</li>
+                </ul>
+                <p><strong>MECÁNICAS:</strong></p>
+                <ul>
+                    <li>Cada jefe requiere un número mínimo de seguidores para ser derrotado</li>
+                    <li>Los seguidores te siguen en formación</li>
+                    <li>Los power-ups de captura te dan ventajas temporales</li>
+                    <li>Evita a los guardias opresores que intentarán dispersar tu turba</li>
+                </ul>
+            </div>
+            <button class="btn" id="backBtn">VOLVER</button>
+        </div>
+        
+        <div class="screen hidden" id="gameOverScreen">
+            <h1>¡REVOLUCIÓN FALLIDA!</h1>
+            <p id="gameOverText">El sistema opresor ha vencido... por ahora.</p>
+            <p id="followersLost"></p>
+            <button class="btn" id="restartBtn">INTENTAR DE NUEVO</button>
+        </div>
+        
+        <div class="screen hidden" id="winScreen">
+            <h1>¡VICTORIA COLECTIVA!</h1>
+            <p id="winText">El pueblo unido ha derrotado al opresor. ¡La revolución triunfa!</p>
+            <p id="followersUsed"></p>
+            <button class="btn" id="winRestartBtn">NUEVA REVOLUCIÓN</button>
+        </div>
+        
+        <div class="hud">
+            <div class="hud-item">SEGUIDORES: <span id="followerCount">0</span></div>
+            <div class="hud-item">OBJETIVO: <span id="requiredFollowers">0</span></div>
+            <div class="hud-item">POWER-UPS: <span id="powerUpCount">0</span></div>
+        </div>
+        
+        <div class="boss-warning" id="bossWarning">¡JEFE OPRESOR ENFRENTADO!</div>
+        
+        <div class="controls">
+            <div class="keyboard-controls">
+                <div>W/↑: ARRIBA | A/←: IZQUIERDA | S/↓: ABAJO | D/→: DERECHA</div>
+                <div>ESPACIO: INTERACTUAR | C: TOMAR CAPTURA (POWER-UP)</div>
+            </div>
+            
+            <div class="touch-controls">
+                <div class="d-pad">
+                    <button class="up">↑</button>
+                    <button class="left">←</button>
+                    <div class="center"></div>
+                    <button class="right">→</button>
+                    <button class="down">↓</button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="touchInteract">RECLUTAR</button>
+                    <button id="touchScreenshot">CAPTURA</button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="screenshot-btn" id="screenshotBtn">📷</button>
+        <div class="screenshot-notification" id="screenshotNotification">¡Power-up activado!</div>
+        <div class="screenshot-effect" id="screenshotEffect"></div>
+    </div>
+    
+    <div class="instructions">
+        <h3>¡LA UNIÓN HACE LA FUERZA!</h3>
+        <p>Cada partida genera un laberinto aleatorio. Recluta a suficientes ciudadanos antes de enfrentar al jefe opresor.</p>
+        <p>Las capturas de pantalla otorgan power-ups temporales: velocidad, protección o reclutamiento instantáneo.</p>
+    </div>
+
+    <script>
+        // Detección de dispositivo táctil
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Elementos del DOM
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const instructionsScreen = document.getElementById('instructionsScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const winScreen = document.getElementById('winScreen');
+        const startBtn = document.getElementById('startBtn');
+        const instructionsBtn = document.getElementById('instructionsBtn');
+        const backBtn = document.getElementById('backBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const winRestartBtn = document.getElementById('winRestartBtn');
+        const followerCountElement = document.getElementById('followerCount');
+        const requiredFollowersElement = document.getElementById('requiredFollowers');
+        const powerUpCountElement = document.getElementById('powerUpCount');
+        const bossWarning = document.getElementById('bossWarning');
+        const gameOverText = document.getElementById('gameOverText');
+        const followersLost = document.getElementById('followersLost');
+        const winText = document.getElementById('winText');
+        const followersUsed = document.getElementById('followersUsed');
+        const screenshotBtn = document.getElementById('screenshotBtn');
+        const screenshotNotification = document.getElementById('screenshotNotification');
+        const screenshotEffect = document.getElementById('screenshotEffect');
+        const touchInteract = document.getElementById('touchInteract');
+        const touchScreenshot = document.getElementById('touchScreenshot');
+        
+        // Variables del juego
+        let gameRunning = false;
+        let player = {};
+        let followers = [];
+        let citizens = [];
+        let enemies = [];
+        let boss = null;
+        let maze = [];
+        let mazeSize = 15;
+        let tileSize = 40;
+        let powerUps = 0;
+        let powerUpActive = false;
+        let powerUpType = '';
+        let powerUpTimer = 0;
+        let bossRequiredFollowers = 0;
+        let keys = {};
+        let touchControls = {
+            up: false,
+            down: false,
+            left: false,
+            right: false
+        };
+        
+        // Configuración de pantallas
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            initGame();
+            gameRunning = true;
+        });
+        
+        instructionsBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            instructionsScreen.classList.remove('hidden');
+        });
+        
+        backBtn.addEventListener('click', () => {
+            instructionsScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            initGame();
+            gameRunning = true;
+        });
+        
+        winRestartBtn.addEventListener('click', () => {
+            winScreen.classList.add('hidden');
+            initGame();
+            gameRunning = true;
+        });
+        
+        // Controles de teclado
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            
+            // Tecla C para captura de pantalla (power-up)
+            if (e.key === 'c' || e.key === 'C') {
+                takeScreenshot();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        // Controles táctiles
+        if (isTouchDevice) {
+            // Mostrar controles táctiles
+            document.querySelector('.keyboard-controls').style.display = 'none';
+            document.querySelector('.touch-controls').style.display = 'flex';
+            
+            // Configurar botones táctiles
+            const setupTouchButton = (button, direction) => {
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    touchControls[direction] = true;
+                });
+                
+                button.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    touchControls[direction] = false;
+                });
+            };
+            
+            setupTouchButton(document.querySelector('.d-pad .up'), 'up');
+            setupTouchButton(document.querySelector('.d-pad .down'), 'down');
+            setupTouchButton(document.querySelector('.d-pad .left'), 'left');
+            setupTouchButton(document.querySelector('.d-pad .right'), 'right');
+            
+            // Botón de interacción táctil
+            touchInteract.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys[' '] = true; // Simular espacio
+            });
+            
+            touchInteract.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[' '] = false;
+            });
+            
+            // Botón de captura táctil
+            touchScreenshot.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                takeScreenshot();
+            });
+        }
+        
+        // Botón de captura de pantalla
+        screenshotBtn.addEventListener('click', takeScreenshot);
+        
+        // Función para tomar captura de pantalla (power-up)
+        function takeScreenshot() {
+            if (!gameRunning) return;
+            
+            // Efecto visual de captura
+            screenshotEffect.style.opacity = '0.7';
+            setTimeout(() => {
+                screenshotEffect.style.opacity = '0';
+            }, 200);
+            
+            // Mostrar notificación
+            screenshotNotification.style.display = 'block';
+            setTimeout(() => {
+                screenshotNotification.style.display = 'none';
+            }, 2000);
+            
+            // Obtener power-up aleatorio
+            const powerUpTypes = ['speed', 'protection', 'recruit'];
+            powerUpType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+            powerUpActive = true;
+            powerUpTimer = 300; // 5 segundos a 60 FPS
+            powerUps++;
+            powerUpCountElement.textContent = powerUps;
+            
+            // Aplicar efecto según tipo de power-up
+            switch(powerUpType) {
+                case 'speed':
+                    player.speed = 8; // Aumentar velocidad
+                    break;
+                case 'protection':
+                    // Los seguidores no pueden ser dispersados temporalmente
+                    break;
+                case 'recruit':
+                    // Reclutar automáticamente ciudadanos cercanos
+                    for (let i = citizens.length - 1; i >= 0; i--) {
+                        const citizen = citizens[i];
+                        const dist = Math.sqrt(
+                            Math.pow(player.x - citizen.x, 2) + 
+                            Math.pow(player.y - citizen.y, 2)
+                        );
+                        
+                        if (dist < 60) {
+                            followers.push({
+                                x: citizen.x,
+                                y: citizen.y,
+                                following: followers.length > 0 ? followers[followers.length - 1] : player,
+                                id: followers.length
+                            });
+                            citizens.splice(i, 1);
+                        }
+                    }
+                    break;
+            }
+        }
+        
+        // Inicialización del juego
+        function initGame() {
+            // Reiniciar variables
+            player = {
+                x: tileSize * 2,
+                y: tileSize * 2,
+                size: 20,
+                speed: 5,
+                color: '#4a69bd'
+            };
+            
+            followers = [];
+            citizens = [];
+            enemies = [];
+            powerUps = 0;
+            powerUpActive = false;
+            powerUpTimer = 0;
+            
+            // Generar laberinto
+            generateMaze();
+            
+            // Colocar ciudadanos
+            placeCitizens();
+            
+            // Colocar enemigos
+            placeEnemies();
+            
+            // Crear jefe
+            createBoss();
+            
+            // Actualizar HUD
+            followerCountElement.textContent = followers.length;
+            powerUpCountElement.textContent = powerUps;
+            requiredFollowersElement.textContent = bossRequiredFollowers;
+        }
+        
+        // Generar laberinto aleatorio
+        function generateMaze() {
+            // Inicializar laberinto lleno de paredes (1 = pared, 0 = camino)
+            maze = Array(mazeSize).fill().map(() => Array(mazeSize).fill(1));
+            
+            // Usar algoritmo de backtracking para generar laberinto
+            const stack = [];
+            const startX = 1, startY = 1;
+            
+            maze[startY][startX] = 0;
+            stack.push([startX, startY]);
+            
+            // Direcciones posibles
+            const directions = [
+                [0, -2], [2, 0], [0, 2], [-2, 0]
+            ];
+            
+            while (stack.length > 0) {
+                const [x, y] = stack[stack.length - 1];
+                
+                // Mezclar direcciones
+                const shuffledDirections = directions.sort(() => Math.random() - 0.5);
+                let moved = false;
+                
+                for (const [dx, dy] of shuffledDirections) {
+                    const newX = x + dx;
+                    const newY = y + dy;
+                    
+                    if (
+                        newX > 0 && newX < mazeSize - 1 &&
+                        newY > 0 && newY < mazeSize - 1 &&
+                        maze[newY][newX] === 1
+                    ) {
+                        // Quitar pared entre celda actual y nueva
+                        maze[y + dy/2][x + dx/2] = 0;
+                        maze[newY][newX] = 0;
+                        stack.push([newX, newY]);
+                        moved = true;
+                        break;
+                    }
+                }
+                
+                if (!moved) {
+                    stack.pop();
+                }
+            }
+            
+            // Asegurar que haya una salida (jefe) en el borde
+            const exitSide = Math.floor(Math.random() * 4);
+            let exitX, exitY;
+            
+            switch(exitSide) {
+                case 0: // Parte superior
+                    exitX = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    exitY = 0;
+                    break;
+                case 1: // Parte derecha
+                    exitX = mazeSize - 1;
+                    exitY = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    break;
+                case 2: // Parte inferior
+                    exitX = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    exitY = mazeSize - 1;
+                    break;
+                case 3: // Parte izquierda
+                    exitX = 0;
+                    exitY = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    break;
+            }
+            
+            // Conectar la salida al laberinto
+            if (exitY === 0 && exitX > 0 && exitX < mazeSize - 1) {
+                maze[1][exitX] = 0;
+            } else if (exitX === mazeSize - 1 && exitY > 0 && exitY < mazeSize - 1) {
+                maze[exitY][mazeSize - 2] = 0;
+            } else if (exitY === mazeSize - 1 && exitX > 0 && exitX < mazeSize - 1) {
+                maze[mazeSize - 2][exitX] = 0;
+            } else if (exitX === 0 && exitY > 0 && exitY < mazeSize - 1) {
+                maze[exitY][1] = 0;
+            }
+            
+            // Posicionar al jugador cerca del inicio
+            player.x = tileSize * 2;
+            player.y = tileSize * 2;
+        }
+        
+        // Colocar ciudadanos en el laberinto
+        function placeCitizens() {
+            const citizenCount = 15 + Math.floor(Math.random() * 10);
+            
+            for (let i = 0; i < citizenCount; i++) {
+                let placed = false;
+                let attempts = 0;
+                
+                while (!placed && attempts < 100) {
+                    const x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    const y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    
+                    if (maze[y][x] === 0) {
+                        // Verificar que no esté demasiado cerca del jugador
+                        const distToPlayer = Math.sqrt(
+                            Math.pow(player.x/tileSize - x, 2) + 
+                            Math.pow(player.y/tileSize - y, 2)
+                        );
+                        
+                        if (distToPlayer > 3) {
+                            citizens.push({
+                                x: x * tileSize + tileSize/2,
+                                y: y * tileSize + tileSize/2,
+                                size: 12,
+                                color: '#78e08f',
+                                recruited: false
+                            });
+                            placed = true;
+                        }
+                    }
+                    
+                    attempts++;
+                }
+            }
+        }
+        
+        // Colocar enemigos en el laberinto
+        function placeEnemies() {
+            const enemyCount = 5 + Math.floor(Math.random() * 5);
+            
+            for (let i = 0; i < enemyCount; i++) {
+                let placed = false;
+                let attempts = 0;
+                
+                while (!placed && attempts < 100) {
+                    const x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    const y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    
+                    if (maze[y][x] === 0) {
+                        // Verificar que no esté demasiado cerca del jugador
+                        const distToPlayer = Math.sqrt(
+                            Math.pow(player.x/tileSize - x, 2) + 
+                            Math.pow(player.y/tileSize - y, 2)
+                        );
+                        
+                        if (distToPlayer > 4) {
+                            enemies.push({
+                                x: x * tileSize + tileSize/2,
+                                y: y * tileSize + tileSize/2,
+                                size: 16,
+                                color: '#e55039',
+                                speed: 1.5,
+                                direction: Math.random() * Math.PI * 2,
+                                directionChange: 0
+                            });
+                            placed = true;
+                        }
+                    }
+                    
+                    attempts++;
+                }
+            }
+        }
+        
+        // Crear jefe opresor
+        function createBoss() {
+            // Encontrar una posición en el borde del laberinto para el jefe
+            let bossX, bossY;
+            
+            // Buscar una posición de salida en el laberinto
+            for (let y = 0; y < mazeSize; y++) {
+                for (let x = 0; x < mazeSize; x++) {
+                    // Buscar un borde que sea camino (0)
+                    if (maze[y][x] === 0 && (x === 0 || x === mazeSize - 1 || y === 0 || y === mazeSize - 1)) {
+                        bossX = x;
+                        bossY = y;
+                        break;
+                    }
+                }
+                if (bossX !== undefined) break;
+            }
+            
+            // Si no se encuentra borde, usar una posición aleatoria
+            if (bossX === undefined) {
+                bossX = mazeSize - 2;
+                bossY = mazeSize - 2;
+            }
+            
+            // Calcular seguidores requeridos (entre 5 y 10)
+            bossRequiredFollowers = 5 + Math.floor(Math.random() * 6);
+            requiredFollowersElement.textContent = bossRequiredFollowers;
+            
+            boss = {
+                x: bossX * tileSize + tileSize/2,
+                y: bossY * tileSize + tileSize/2,
+                size: 40,
+                color: '#8e44ad',
+                health: bossRequiredFollowers * 2,
+                maxHealth: bossRequiredFollowers * 2
+            };
+        }
+        
+        // Actualizar lógica del juego
+        function update() {
+            if (!gameRunning) return;
+            
+            // Movimiento del jugador
+            let moveX = 0;
+            let moveY = 0;
+            
+            // Controles de teclado
+            if (keys['w'] || keys['arrowup'] || touchControls.up) moveY -= player.speed;
+            if (keys['s'] || keys['arrowdown'] || touchControls.down) moveY += player.speed;
+            if (keys['a'] || keys['arrowleft'] || touchControls.left) moveX -= player.speed;
+            if (keys['d'] || keys['arrowright'] || touchControls.right) moveX += player.speed;
+            
+            // Normalizar movimiento diagonal
+            if (moveX !== 0 && moveY !== 0) {
+                moveX *= 0.7071; // 1/√2
+                moveY *= 0.7071;
+            }
+            
+            // Verificar colisiones con paredes
+            const newX = player.x + moveX;
+            const newY = player.y + moveY;
+            
+            // Convertir posición a coordenadas del laberinto
+            const playerTileX = Math.floor(newX / tileSize);
+            const playerTileY = Math.floor(newY / tileSize);
+            
+            // Verificar si la nueva posición es transitable
+            if (
+                playerTileX >= 0 && playerTileX < mazeSize &&
+                playerTileY >= 0 && playerTileY < mazeSize &&
+                maze[playerTileY][playerTileX] === 0
+            ) {
+                player.x = newX;
+                player.y = newY;
+            } else {
+                // Intentar mover solo en X
+                const playerTileXOnlyX = Math.floor((player.x + moveX) / tileSize);
+                const playerTileYOnlyX = Math.floor(player.y / tileSize);
+                
+                if (
+                    playerTileXOnlyX >= 0 && playerTileXOnlyX < mazeSize &&
+                    playerTileYOnlyX >= 0 && playerTileYOnlyX < mazeSize &&
+                    maze[playerTileYOnlyX][playerTileXOnlyX] === 0
+                ) {
+                    player.x += moveX;
+                }
+                
+                // Intentar mover solo en Y
+                const playerTileXOnlyY = Math.floor(player.x / tileSize);
+                const playerTileYOnlyY = Math.floor((player.y + moveY) / tileSize);
+                
+                if (
+                    playerTileXOnlyY >= 0 && playerTileXOnlyY < mazeSize &&
+                    playerTileYOnlyY >= 0 && playerTileYOnlyY < mazeSize &&
+                    maze[playerTileYOnlyY][playerTileXOnlyY] === 0
+                ) {
+                    player.y += moveY;
+                }
+            }
+            
+            // Reclutar ciudadanos (tecla espacio o interacción táctil)
+            if (keys[' ']) {
+                for (let i = citizens.length - 1; i >= 0; i--) {
+                    const citizen = citizens[i];
+                    const dist = Math.sqrt(
+                        Math.pow(player.x - citizen.x, 2) + 
+                        Math.pow(player.y - citizen.y, 2)
+                    );
+                    
+                    if (dist < 40) {
+                        followers.push({
+                            x: citizen.x,
+                            y: citizen.y,
+                            following: followers.length > 0 ? followers[followers.length - 1] : player,
+                            id: followers.length,
+                            color: '#f6b93b'
+                        });
+                        citizens.splice(i, 1);
+                        followerCountElement.textContent = followers.length;
+                    }
+                }
+                keys[' '] = false; // Reiniciar para que no se mantenga presionado
+            }
+            
+            // Actualizar posición de seguidores
+            for (let i = 0; i < followers.length; i++) {
+                const follower = followers[i];
+                const target = i === 0 ? player : followers[i-1];
+                
+                // Calcular distancia al objetivo
+                const dx = target.x - follower.x;
+                const dy = target.y - follower.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                // Si está demasiado lejos, acercarse
+                if (distance > 30) {
+                    follower.x += (dx / distance) * player.speed * 0.8;
+                    follower.y += (dy / distance) * player.speed * 0.8;
+                }
+                
+                // Verificar colisiones con paredes para seguidores
+                const followerTileX = Math.floor(follower.x / tileSize);
+                const followerTileY = Math.floor(follower.y / tileSize);
+                
+                if (
+                    followerTileX < 0 || followerTileX >= mazeSize ||
+                    followerTileY < 0 || followerTileY >= mazeSize ||
+                    maze[followerTileY][followerTileX] === 1
+                ) {
+                    // Empujar al seguidor hacia la última posición válida
+                    if (i > 0) {
+                        follower.x = followers[i-1].x;
+                        follower.y = followers[i-1].y;
+                    } else {
+                        follower.x = player.x;
+                        follower.y = player.y;
+                    }
+                }
+            }
+            
+            // Actualizar enemigos
+            for (let i = 0; i < enemies.length; i++) {
+                const enemy = enemies[i];
+                
+                // Cambiar dirección aleatoriamente
+                enemy.directionChange++;
+                if (enemy.directionChange > 60 || Math.random() < 0.05) {
+                    enemy.direction = Math.random() * Math.PI * 2;
+                    enemy.directionChange = 0;
+                }
+                
+                // Movimiento
+                enemy.x += Math.cos(enemy.direction) * enemy.speed;
+                enemy.y += Math.sin(enemy.direction) * enemy.speed;
+                
+                // Verificar colisiones con paredes
+                const enemyTileX = Math.floor(enemy.x / tileSize);
+                const enemyTileY = Math.floor(enemy.y / tileSize);
+                
+                if (
+                    enemyTileX < 0 || enemyTileX >= mazeSize ||
+                    enemyTileY < 0 || enemyTileY >= mazeSize ||
+                    maze[enemyTileY][enemyTileX] === 1
+                ) {
+                    // Rebote
+                    enemy.direction += Math.PI;
+                    enemy.x -= Math.cos(enemy.direction) * enemy.speed * 2;
+                    enemy.y -= Math.sin(enemy.direction) * enemy.speed * 2;
+                }
+                
+                // Verificar colisión con el jugador
+                const distToPlayer = Math.sqrt(
+                    Math.pow(player.x - enemy.x, 2) + 
+                    Math.pow(player.y - enemy.y, 2)
+                );
+                
+                if (distToPlayer < player.size/2 + enemy.size/2) {
+                    // El jugador pierde seguidores
+                    if (followers.length > 0) {
+                        const lostCount = Math.min(2, followers.length);
+                        followers.splice(-lostCount, lostCount);
+                        followerCountElement.textContent = followers.length;
+                    } else {
+                        // Game over si no tiene seguidores
+                        gameOver();
+                    }
+                }
+                
+                // Verificar colisión con seguidores (solo si no hay power-up de protección)
+                if (!powerUpActive || powerUpType !== 'protection') {
+                    for (let j = followers.length - 1; j >= 0; j--) {
+                        const follower = followers[j];
+                        const distToFollower = Math.sqrt(
+                            Math.pow(follower.x - enemy.x, 2) + 
+                            Math.pow(follower.y - enemy.y, 2)
+                        );
+                        
+                        if (distToFollower < follower.size/2 + enemy.size/2) {
+                            // El seguidor es dispersado
+                            followers.splice(j, 1);
+                            followerCountElement.textContent = followers.length;
+                        }
+                    }
+                }
+            }
+            
+            // Verificar colisión con el jefe
+            if (boss) {
+                const distToBoss = Math.sqrt(
+                    Math.pow(player.x - boss.x, 2) + 
+                    Math.pow(player.y - boss.y, 2)
+                );
+                
+                if (distToBoss < 100) {
+                    // Mostrar advertencia de jefe
+                    bossWarning.style.display = 'block';
+                    
+                    // Verificar si el jugador tiene suficientes seguidores
+                    if (followers.length >= bossRequiredFollowers) {
+                        // Derrotar al jefe
+                        boss.health -= followers.length;
+                        
+                        if (boss.health <= 0) {
+                            victory();
+                        }
+                    }
+                } else {
+                    bossWarning.style.display = 'none';
+                }
+            }
+            
+            // Actualizar power-up
+            if (powerUpActive) {
+                powerUpTimer--;
+                
+                if (powerUpTimer <= 0) {
+                    powerUpActive = false;
+                    
+                    // Restaurar velocidad normal si era power-up de velocidad
+                    if (powerUpType === 'speed') {
+                        player.speed = 5;
+                    }
+                }
+            }
+        }
+        
+        // Dibujar en el canvas
+        function draw() {
+            if (!gameRunning) return;
+            
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar laberinto
+            for (let y = 0; y < mazeSize; y++) {
+                for (let x = 0; x < mazeSize; x++) {
+                    if (maze[y][x] === 1) {
+                        ctx.fillStyle = '#0f3460';
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                        
+                        // Patrón de ladrillos
+                        ctx.strokeStyle = '#162447';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    } else {
+                        ctx.fillStyle = '#1a1a2e';
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    }
+                }
+            }
+            
+            // Dibujar ciudadanos
+            for (const citizen of citizens) {
+                ctx.fillStyle = citizen.color;
+                ctx.beginPath();
+                ctx.arc(citizen.x, citizen.y, citizen.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Ojos
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(citizen.x - 3, citizen.y - 3, 2, 0, Math.PI * 2);
+                ctx.arc(citizen.x + 3, citizen.y - 3, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Boca (sonrisa)
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(citizen.x, citizen.y, 4, 0.2, Math.PI - 0.2);
+                ctx.stroke();
+            }
+            
+            // Dibujar enemigos
+            for (const enemy of enemies) {
+                ctx.fillStyle = enemy.color;
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Ojos enojados
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(enemy.x - 4, enemy.y - 4, 3, 0, Math.PI * 2);
+                ctx.arc(enemy.x + 4, enemy.y - 4, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Boca enfadada
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y + 3, 3, 0.2, Math.PI - 0.2, true);
+                ctx.stroke();
+                
+                // Cuernos
+                ctx.fillStyle = enemy.color;
+                ctx.beginPath();
+                ctx.moveTo(enemy.x - 6, enemy.y - 8);
+                ctx.lineTo(enemy.x - 10, enemy.y - 15);
+                ctx.lineTo(enemy.x - 2, enemy.y - 10);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(enemy.x + 6, enemy.y - 8);
+                ctx.lineTo(enemy.x + 10, enemy.y - 15);
+                ctx.lineTo(enemy.x + 2, enemy.y - 10);
+                ctx.fill();
+            }
+            
+            // Dibujar seguidores
+            for (const follower of followers) {
+                ctx.fillStyle = follower.color;
+                ctx.beginPath();
+                ctx.arc(follower.x, follower.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bandera de revolución
+                ctx.fillStyle = '#e55039';
+                ctx.fillRect(follower.x + 5, follower.y - 10, 8, 15);
+                
+                ctx.fillStyle = '#f6b93b';
+                ctx.beginPath();
+                ctx.moveTo(follower.x + 13, follower.y - 10);
+                ctx.lineTo(follower.x + 13, follower.y + 5);
+                ctx.lineTo(follower.x + 20, follower.y - 2.5);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // Dibujar jefe
+            if (boss) {
+                ctx.fillStyle = boss.color;
+                ctx.beginPath();
+                ctx.arc(boss.x, boss.y, boss.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Corona opresora
+                ctx.fillStyle = '#f6b93b';
+                ctx.beginPath();
+                ctx.moveTo(boss.x - 20, boss.y - 15);
+                ctx.lineTo(boss.x - 10, boss.y - 30);
+                ctx.lineTo(boss.x, boss.y - 15);
+                ctx.lineTo(boss.x + 10, boss.y - 30);
+                ctx.lineTo(boss.x + 20, boss.y - 15);
+                ctx.lineTo(boss.x + 20, boss.y - 5);
+                ctx.lineTo(boss.x - 20, boss.y - 5);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Ojos malvados
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(boss.x - 10, boss.y - 5, 6, 0, Math.PI * 2);
+                ctx.arc(boss.x + 10, boss.y - 5, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(boss.x - 10, boss.y - 5, 3, 0, Math.PI * 2);
+                ctx.arc(boss.x + 10, boss.y - 5, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Boca
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(boss.x, boss.y + 10, 8, 0.2, Math.PI - 0.2);
+                ctx.stroke();
+                
+                // Barra de salud
+                const healthWidth = 100;
+                const healthHeight = 10;
+                const healthX = boss.x - healthWidth/2;
+                const healthY = boss.y - boss.size/2 - 20;
+                
+                // Fondo de la barra
+                ctx.fillStyle = '#333';
+                ctx.fillRect(healthX, healthY, healthWidth, healthHeight);
+                
+                // Salud actual
+                const healthPercent = boss.health / boss.maxHealth;
+                ctx.fillStyle = healthPercent > 0.5 ? '#78e08f' : healthPercent > 0.25 ? '#f6b93b' : '#e55039';
+                ctx.fillRect(healthX, healthY, healthWidth * healthPercent, healthHeight);
+                
+                // Borde
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(healthX, healthY, healthWidth, healthHeight);
+                
+                // Texto de salud
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText(`OPRESOR: ${boss.health}/${boss.maxHealth}`, boss.x, healthY - 5);
+            }
+            
+            // Dibujar jugador
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Detalles del jugador
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(player.x - 4, player.y - 4, 3, 0, Math.PI * 2);
+            ctx.arc(player.x + 4, player.y - 4, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bandera de líder
+            ctx.fillStyle = '#e55039';
+            ctx.fillRect(player.x + 8, player.y - 12, 10, 20);
+            
+            ctx.fillStyle = '#f6b93b';
+            ctx.beginPath();
+            ctx.moveTo(player.x + 18, player.y - 12);
+            ctx.lineTo(player.x + 18, player.y + 8);
+            ctx.lineTo(player.x + 28, player.y - 2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Indicador de power-up activo
+            if (powerUpActive) {
+                ctx.fillStyle = powerUpType === 'speed' ? '#78e08f' : 
+                                powerUpType === 'protection' ? '#4a69bd' : 
+                                '#f6b93b';
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size/2 + 5, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Mostrar tiempo restante
+                const secondsLeft = Math.ceil(powerUpTimer / 60);
+                ctx.fillStyle = '#fff';
+                ctx.font = '8px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${secondsLeft}s`, player.x, player.y + 25);
+            }
+        }
+        
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            gameOverText.textContent = "El sistema opresor ha vencido... por ahora.";
+            followersLost.textContent = `Lograste reunir ${followers.length} seguidores, pero necesitabas ${bossRequiredFollowers}.`;
+            gameOverScreen.classList.remove('hidden');
+        }
+        
+        // Victoria
+        function victory() {
+            gameRunning = false;
+            winText.textContent = "¡El pueblo unido ha derrotado al opresor!";
+            followersUsed.textContent = `Usaste ${followers.length} seguidores para derrotar al jefe que requería ${bossRequiredFollowers}.`;
+            winScreen.classList.remove('hidden');
+        }
+        
+        // Bucle del juego
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Iniciar bucle del juego
+        gameLoop();
+        
+        // Mostrar instrucciones en primer inicio
+        window.addEventListener('load', () => {
+            // Si es un dispositivo táctil, mostrar controles táctiles
+            if (isTouchDevice) {
+                document.querySelector('.keyboard-controls').style.display = 'none';
+                document.querySelector('.touch-controls').style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>
