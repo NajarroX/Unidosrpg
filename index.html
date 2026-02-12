@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Revolución Colectiva</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Revolución Colectiva - GLITCH</title>
     <style>
         * {
             margin: 0;
@@ -18,8 +18,24 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', monospace;
             padding: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Efecto glitch global */
+        @keyframes globalGlitch {
+            0% { transform: translate(0); filter: hue-rotate(0deg); }
+            20% { transform: translate(-2px, 1px); filter: hue-rotate(45deg); }
+            40% { transform: translate(2px, -1px); filter: hue-rotate(90deg); }
+            60% { transform: translate(-1px, -1px); filter: hue-rotate(180deg); }
+            80% { transform: translate(1px, 2px); filter: hue-rotate(270deg); }
+            100% { transform: translate(0); filter: hue-rotate(360deg); }
+        }
+
+        .glitch-effect {
+            animation: globalGlitch 0.3s ease;
         }
 
         .game-wrapper {
@@ -29,6 +45,8 @@
             border-radius: 10px;
             padding: 10px;
             box-shadow: 0 0 20px rgba(246, 185, 59, 0.5);
+            position: relative;
+            overflow: hidden;
         }
 
         canvas {
@@ -39,6 +57,8 @@
             border: 3px solid #f6b93b;
             border-radius: 5px;
             cursor: default;
+            position: relative;
+            z-index: 2;
         }
 
         .hud {
@@ -47,9 +67,12 @@
             margin-top: 10px;
             color: white;
             font-size: 14px;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             padding: 10px;
             border-radius: 5px;
+            border: 1px solid #f6b93b;
+            position: relative;
+            z-index: 2;
         }
 
         .controls-info {
@@ -57,15 +80,20 @@
             color: #f6b93b;
             font-size: 12px;
             text-align: center;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             padding: 10px;
             border-radius: 5px;
+            border: 1px solid #f6b93b;
+            position: relative;
+            z-index: 2;
         }
 
         .touch-controls {
             display: none;
             margin-top: 10px;
             gap: 10px;
+            position: relative;
+            z-index: 10;
         }
 
         .touch-btn {
@@ -77,26 +105,88 @@
             border: none;
             border-radius: 5px;
             font-weight: bold;
+            border-bottom: 4px solid #b33939;
+            transition: all 0.05s;
+            touch-action: manipulation;
         }
 
+        .touch-btn:active {
+            border-bottom-width: 0px;
+            transform: translateY(4px);
+        }
+
+        /* JOYSTICK MEJORADO - Estilo Santa Defender */
         .touch-joystick-area {
             display: none;
             position: relative;
-            width: 120px;
-            height: 120px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 60px;
+            width: 140px;
+            height: 140px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 70px;
             margin: 10px auto;
+            border: 2px solid rgba(246, 185, 59, 0.6);
+            box-shadow: 0 0 15px rgba(246, 185, 59, 0.3);
+            backdrop-filter: blur(2px);
+            touch-action: none;
+        }
+
+        .joystick-base {
+            width: 100%;
+            height: 100%;
+            border-radius: 70px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
 
         .joystick-handle {
-            width: 50px;
-            height: 50px;
-            background: #4a69bd;
-            border-radius: 25px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #6a89cc, #4a69bd);
+            border-radius: 30px;
             position: absolute;
-            top: 35px;
-            left: 35px;
+            box-shadow: 0 0 15px rgba(74, 105, 189, 0.8), 0 4px 0 #1e3799;
+            border: 2px solid #f6b93b;
+            transition: transform 0.02s linear; /* Transición más rápida para respuesta inmediata */
+            will-change: transform;
+            touch-action: none;
+            pointer-events: none;
+        }
+
+        .joystick-handle:active {
+            background: radial-gradient(circle at 30% 30%, #f6b93b, #e55039);
+        }
+
+        /* Capa de glitch overlay */
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            mix-blend-mode: screen;
+            opacity: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 0, 0, 0.2) 0px,
+                rgba(0, 255, 0, 0.2) 2px,
+                rgba(0, 0, 255, 0.2) 4px,
+                transparent 6px
+            );
+            animation: scanlines 0.2s infinite linear;
+        }
+
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 10px; }
+        }
+
+        .glitch-overlay.active {
+            opacity: 0.7;
         }
 
         .screen {
@@ -109,9 +199,10 @@
             border-radius: 10px;
             text-align: center;
             color: white;
-            z-index: 100;
+            z-index: 200;
             border: 3px solid #f6b93b;
             max-width: 90%;
+            backdrop-filter: blur(5px);
         }
 
         .screen.hidden {
@@ -127,6 +218,14 @@
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
+            border-bottom: 4px solid #b33939;
+            transition: all 0.05s;
+            font-weight: bold;
+        }
+
+        .btn:active {
+            border-bottom-width: 0px;
+            transform: translateY(4px);
         }
 
         @media (max-width: 768px) {
@@ -135,53 +234,70 @@
             }
             .touch-controls {
                 display: flex;
+                flex-direction: column;
+                align-items: center;
             }
             .touch-joystick-area {
                 display: block;
+            }
+            .touch-btn {
+                width: 100%;
+                padding: 18px;
+                font-size: 18px;
             }
         }
     </style>
 </head>
 <body>
     <div class="game-wrapper">
+        <!-- Canvas principal -->
         <canvas id="gameCanvas" width="600" height="600"></canvas>
         
+        <!-- Capa de glitch overlay -->
+        <div class="glitch-overlay" id="glitchOverlay"></div>
+        
+        <!-- HUD -->
         <div class="hud">
-            <div>👥 SEGUIDORES: <span id="followerCount">0</span></div>
-            <div>🎯 OBJETIVO: <span id="requiredFollowers">0</span></div>
-            <div>⚡ POWER-UP: <span id="powerUpStatus">-</span></div>
+            <div>👥 SEGUIDORES: <span id="followerCount">0</span> / <span id="requiredFollowers">5</span></div>
+            <div>⚡ POWER: <span id="powerUpStatus">-</span></div>
         </div>
 
-        <!-- Controles táctiles -->
+        <!-- Controles táctiles MEJORADOS -->
         <div class="touch-controls">
             <div class="touch-joystick-area" id="joystickArea">
-                <div class="joystick-handle" id="joystickHandle"></div>
+                <div class="joystick-base">
+                    <div class="joystick-handle" id="joystickHandle"></div>
+                </div>
             </div>
-            <button class="touch-btn" id="recruitBtn">RECLUTAR</button>
-            <button class="touch-btn" id="screenshotBtn">📷 POWER-UP</button>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button class="touch-btn" id="recruitBtn">🔥 RECLUTAR</button>
+                <button class="touch-btn" id="screenshotBtn">📸 POWER-UP</button>
+            </div>
         </div>
 
         <div class="controls-info keyboard-only">
-            <p>🎮 CONTROLES PC: WASD / FLECHAS = MOVER | ESPACIO = RECLUTAR | C = POWER-UP</p>
+            <p>🎮 WASD / FLECHAS = MOVER | ESPACIO = RECLUTAR | C = POWER-UP</p>
+            <p style="color: #78e08f; margin-top: 5px;">¡EL PUEBLO UNO JAMÁS SERÁ VENCIDO!</p>
         </div>
 
         <!-- Pantallas -->
         <div id="startScreen" class="screen">
-            <h1 style="color: #f6b93b;">REVOLUCIÓN COLECTIVA</h1>
-            <p style="margin: 20px 0;">¡Recluta seguidores y derrota al jefe opresor!</p>
-            <button class="btn" id="startBtn">COMENZAR</button>
+            <h1 style="color: #f6b93b; font-size: 28px; text-shadow: 3px 3px 0 #e55039;">REVOLUCIÓN</h1>
+            <h1 style="color: #f6b93b; font-size: 28px; margin-top: -10px; text-shadow: 3px 3px 0 #e55039;">COLECTIVA</h1>
+            <p style="margin: 20px 0; line-height: 1.6;">✊ Recluta seguidores ✊<br>💪 Derrota al sistema opresor 💪</p>
+            <button class="btn" id="startBtn">COMENZAR REVOLUCIÓN</button>
         </div>
 
         <div id="gameOverScreen" class="screen hidden">
-            <h1 style="color: #e55039;">DERROTADO</h1>
-            <p id="gameOverText" style="margin: 20px 0;"></p>
+            <h1 style="color: #e55039; font-size: 24px;">✖ DERROTADO ✖</h1>
+            <p id="gameOverText" style="margin: 20px 0; line-height: 1.6;"></p>
             <button class="btn" id="restartBtn">REINTENTAR</button>
         </div>
 
         <div id="winScreen" class="screen hidden">
-            <h1 style="color: #78e08f;">¡VICTORIA!</h1>
-            <p id="winText" style="margin: 20px 0;"></p>
-            <button class="btn" id="playAgainBtn">JUGAR DE NUEVO</button>
+            <h1 style="color: #78e08f; font-size: 24px;">¡VICTORIA DEL PUEBLO!</h1>
+            <p id="winText" style="margin: 20px 0; line-height: 1.6;"></p>
+            <button class="btn" id="playAgainBtn">NUEVA REVOLUCIÓN</button>
         </div>
     </div>
 
@@ -195,6 +311,44 @@
         const followerSpan = document.getElementById('followerCount');
         const requiredSpan = document.getElementById('requiredFollowers');
         const powerUpSpan = document.getElementById('powerUpStatus');
+        const glitchOverlay = document.getElementById('glitchOverlay');
+
+        // ========== SISTEMA DE GLITCH ANIMACIONES ==========
+        let glitchIntensity = 0;
+        
+        function triggerGlitch(intensity = 1, duration = 500) {
+            glitchIntensity = intensity;
+            glitchOverlay.classList.add('active');
+            glitchOverlay.style.opacity = intensity * 0.7;
+            
+            // Agregar clase glitch al wrapper
+            document.querySelector('.game-wrapper').classList.add('glitch-effect');
+            
+            setTimeout(() => {
+                glitchOverlay.classList.remove('active');
+                document.querySelector('.game-wrapper').classList.remove('glitch-effect');
+                glitchIntensity = 0;
+            }, duration);
+        }
+
+        function triggerVictoryGlitch() {
+            // Glitch épico para victoria
+            triggerGlitch(1, 800);
+            
+            // Múltiples ondas de glitch
+            setTimeout(() => triggerGlitch(0.8, 300), 200);
+            setTimeout(() => triggerGlitch(0.6, 200), 500);
+        }
+
+        function triggerDefeatGlitch() {
+            // Glitch trágico para derrota
+            triggerGlitch(1, 600);
+            
+            // Ondas de glitch más caóticas
+            setTimeout(() => triggerGlitch(0.9, 200), 150);
+            setTimeout(() => triggerGlitch(0.7, 200), 350);
+            setTimeout(() => triggerGlitch(0.5, 200), 550);
+        }
 
         // ========== VARIABLES DEL JUEGO ==========
         let gameRunning = false;
@@ -204,7 +358,7 @@
             x: 100,
             y: 100,
             size: 16,
-            speed: 2.5,
+            speed: 3.2, // Velocidad aumentada ligeramente
             color: '#4a69bd'
         };
 
@@ -235,38 +389,123 @@
         let powerUpTimer = 0;
         let powerUpType = '';
 
-        // Controles
+        // Controles PC
         let keys = {
             w: false, a: false, s: false, d: false,
             arrowup: false, arrowdown: false, arrowleft: false, arrowright: false,
             space: false
         };
 
-        // Joystick
-        let joystickActive = false;
-        let joystickX = 0;
-        let joystickY = 0;
+        // ========== JOYSTICK MEJORADO - SANTA DEFENDER STYLE ==========
+        let joystick = {
+            active: false,
+            x: 0,
+            y: 0,
+            magnitude: 0,
+            angle: 0
+        };
+
+        function setupJoystick() {
+            const joystickArea = document.getElementById('joystickArea');
+            const joystickHandle = document.getElementById('joystickHandle');
+            
+            if (!joystickArea) return;
+
+            // Eventos touch con mejor respuesta
+            joystickArea.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                joystick.active = true;
+                
+                const touch = e.touches[0];
+                const rect = joystickArea.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                updateJoystickPosition(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!joystick.active) return;
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const rect = joystickArea.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                updateJoystickPosition(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
+            });
+
+            document.addEventListener('touchend', (e) => {
+                if (!joystick.active) return;
+                e.preventDefault();
+                
+                joystick.active = false;
+                joystick.x = 0;
+                joystick.y = 0;
+                joystick.magnitude = 0;
+                
+                // Reset suave del joystick
+                joystickHandle.style.transform = 'translate(-50%, -50%) translate(0px, 0px)';
+                joystickHandle.style.left = '50%';
+                joystickHandle.style.top = '50%';
+            });
+        }
+
+        function updateJoystickPosition(touchX, touchY, centerX, centerY, handle) {
+            // Calcular vector desde el centro
+            let dx = touchX - centerX;
+            let dy = touchY - centerY;
+            
+            // Distancia máxima (radio del joystick)
+            const maxDistance = 45;
+            
+            // Calcular distancia
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Limitar a la distancia máxima
+            if (distance > maxDistance) {
+                dx = (dx / distance) * maxDistance;
+                dy = (dy / distance) * maxDistance;
+                distance = maxDistance;
+            }
+            
+            // Calcular magnitud normalizada (0-1)
+            const magnitude = distance / maxDistance;
+            
+            // Guardar valores del joystick
+            joystick.x = dx / maxDistance;  // Normalizado entre -1 y 1
+            joystick.y = dy / maxDistance;
+            joystick.magnitude = magnitude;
+            
+            // Actualizar posición visual - usando transform para mejor performance
+            handle.style.transform = `translate(-50%, -50%) translate(${dx}px, ${dy}px)`;
+            handle.style.left = '50%';
+            handle.style.top = '50%';
+        }
 
         // ========== FUNCIONES PRINCIPALES ==========
         function initGame() {
             // Resetear jugador
             player.x = 100;
             player.y = 100;
-            player.speed = 2.5;
+            player.speed = 3.2;
 
             // Resetear colecciones
             followers = [];
             citizens = [];
             enemies = [];
 
-            // Crear ciudadanos (8-12)
-            const numCitizens = 8 + Math.floor(Math.random() * 5);
+            // Crear ciudadanos (10-15)
+            const numCitizens = 10 + Math.floor(Math.random() * 6);
             for (let i = 0; i < numCitizens; i++) {
-                let x, y;
+                let x, y, attempts = 0;
                 do {
                     x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
                     y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                } while (maze[y][x] !== 0 || (x === 1 && y === 1));
+                    attempts++;
+                    if (attempts > 100) break;
+                } while (maze[y][x] !== 0 || (Math.abs(x - 1) + Math.abs(y - 1) < 2));
                 
                 citizens.push({
                     x: x * tileSize + tileSize/2,
@@ -279,10 +518,12 @@
             // Crear enemigos (3-5)
             const numEnemies = 3 + Math.floor(Math.random() * 3);
             for (let i = 0; i < numEnemies; i++) {
-                let x, y;
+                let x, y, attempts = 0;
                 do {
                     x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
                     y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    attempts++;
+                    if (attempts > 100) break;
                 } while (maze[y][x] !== 0 || Math.abs(x - 1) + Math.abs(y - 1) < 3);
                 
                 enemies.push({
@@ -290,9 +531,9 @@
                     y: y * tileSize + tileSize/2,
                     size: 16,
                     color: '#e55039',
-                    speed: 1,
-                    dx: 0,
-                    dy: 0
+                    speed: 1.2,
+                    dx: (Math.random() - 0.5) * 2,
+                    dy: (Math.random() - 0.5) * 2
                 });
             }
 
@@ -301,9 +542,9 @@
             do {
                 bossX = Math.floor(Math.random() * (mazeSize - 2)) + 1;
                 bossY = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-            } while (maze[bossY][bossX] !== 0 || Math.abs(bossX - 1) + Math.abs(bossY - 1) < 5);
+            } while (maze[bossY][bossX] !== 0 || Math.abs(bossX - 1) + Math.abs(bossY - 1) < 6);
             
-            bossRequiredFollowers = 5 + Math.floor(Math.random() * 3);
+            bossRequiredFollowers = 4 + Math.floor(Math.random() * 4);
             boss = {
                 x: bossX * tileSize + tileSize/2,
                 y: bossY * tileSize + tileSize/2,
@@ -321,19 +562,17 @@
             gameRunning = true;
         }
 
-        // ========== CONTROLES ==========
-        function setupControls() {
-            // Teclado PC
+        // ========== CONTROLES PC ==========
+        function setupKeyboardControls() {
             window.addEventListener('keydown', (e) => {
                 const key = e.key.toLowerCase();
                 
-                if (key === 'w' || key === 'arrowup') keys.w = true;
-                if (key === 's' || key === 'arrowdown') keys.s = true;
-                if (key === 'a' || key === 'arrowleft') keys.a = true;
-                if (key === 'd' || key === 'arrowright') keys.d = true;
+                if (key === 'w' || key === 'arrowup') { e.preventDefault(); keys.w = true; }
+                if (key === 's' || key === 'arrowdown') { e.preventDefault(); keys.s = true; }
+                if (key === 'a' || key === 'arrowleft') { e.preventDefault(); keys.a = true; }
+                if (key === 'd' || key === 'arrowright') { e.preventDefault(); keys.d = true; }
                 if (key === ' ') {
                     e.preventDefault();
-                    keys.space = true;
                     recruitCitizens();
                 }
                 if (key === 'c') {
@@ -349,77 +588,10 @@
                 if (key === 's' || key === 'arrowdown') keys.s = false;
                 if (key === 'a' || key === 'arrowleft') keys.a = false;
                 if (key === 'd' || key === 'arrowright') keys.d = false;
-                if (key === ' ') keys.space = false;
             });
-
-            // Controles táctiles
-            if (isTouchDevice) {
-                // Joystick
-                const joystickArea = document.getElementById('joystickArea');
-                const joystickHandle = document.getElementById('joystickHandle');
-
-                joystickArea.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    joystickActive = true;
-                    const touch = e.touches[0];
-                    const rect = joystickArea.getBoundingClientRect();
-                    const centerX = rect.left + rect.width/2;
-                    const centerY = rect.top + rect.height/2;
-                    updateJoystick(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
-                });
-
-                document.addEventListener('touchmove', (e) => {
-                    if (!joystickActive) return;
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    const rect = joystickArea.getBoundingClientRect();
-                    const centerX = rect.left + rect.width/2;
-                    const centerY = rect.top + rect.height/2;
-                    updateJoystick(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
-                });
-
-                document.addEventListener('touchend', (e) => {
-                    if (!joystickActive) return;
-                    e.preventDefault();
-                    joystickActive = false;
-                    joystickX = 0;
-                    joystickY = 0;
-                    joystickHandle.style.transform = 'translate(0px, 0px)';
-                });
-
-                // Botón reclutar
-                document.getElementById('recruitBtn').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    recruitCitizens();
-                });
-
-                // Botón power-up
-                document.getElementById('screenshotBtn').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    activatePowerUp();
-                });
-            }
         }
 
-        function updateJoystick(touchX, touchY, centerX, centerY, handle) {
-            let dx = touchX - centerX;
-            let dy = touchY - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const maxDistance = 35;
-            
-            if (distance > maxDistance) {
-                dx = (dx / distance) * maxDistance;
-                dy = (dy / distance) * maxDistance;
-            }
-            
-            handle.style.transform = `translate(${dx}px, ${dy}px)`;
-            
-            // Convertir a dirección (normalizada)
-            joystickX = dx / maxDistance;
-            joystickY = dy / maxDistance;
-        }
-
-        // ========== MECÁNICAS ==========
+        // ========== MECÁNICAS CON GLITCH ==========
         function recruitCitizens() {
             if (!gameRunning) return;
             
@@ -429,7 +601,7 @@
                 const citizen = citizens[i];
                 const dist = Math.hypot(player.x - citizen.x, player.y - citizen.y);
                 
-                if (dist < 40) {
+                if (dist < 45) {
                     followers.push({
                         x: citizen.x,
                         y: citizen.y,
@@ -444,6 +616,8 @@
             }
             
             if (recruited > 0) {
+                // GLITCH ANIMATION al reclutar
+                triggerGlitch(0.4, 200);
                 followerSpan.textContent = followers.length;
             }
         }
@@ -452,23 +626,26 @@
             if (!gameRunning) return;
             
             powerUpActive = true;
-            powerUpTimer = 180; // 3 segundos
+            powerUpTimer = 240; // 4 segundos
             
             const types = ['speed', 'protection', 'recruit'];
             powerUpType = types[Math.floor(Math.random() * 3)];
             
             powerUpSpan.textContent = powerUpType === 'speed' ? '⚡ VELOCIDAD' : 
                                      powerUpType === 'protection' ? '🛡️ PROTECCIÓN' : 
-                                     '📢 RECLUTAR';
+                                     '📢 RECLUTAMIENTO';
+            
+            // Glitch al activar power-up
+            triggerGlitch(0.5, 300);
             
             if (powerUpType === 'speed') {
-                player.speed = 4;
+                player.speed = 5;
             } else if (powerUpType === 'recruit') {
                 // Reclutar ciudadanos cercanos
                 for (let i = citizens.length - 1; i >= 0; i--) {
                     const citizen = citizens[i];
                     const dist = Math.hypot(player.x - citizen.x, player.y - citizen.y);
-                    if (dist < 80) {
+                    if (dist < 100) {
                         followers.push({
                             x: citizen.x,
                             y: citizen.y,
@@ -488,23 +665,24 @@
         function update() {
             if (!gameRunning) return;
 
-            // Movimiento del jugador
+            // Movimiento del jugador - combinando teclado y joystick
             let moveX = 0, moveY = 0;
             
-            // Teclado
+            // Teclado PC
             if (keys.w || keys.arrowup) moveY -= 1;
             if (keys.s || keys.arrowdown) moveY += 1;
             if (keys.a || keys.arrowleft) moveX -= 1;
             if (keys.d || keys.arrowright) moveX += 1;
             
-            // Joystick táctil
-            if (joystickActive) {
-                moveX += joystickX;
-                moveY += joystickY;
+            // Joystick táctil - VALORES NORMALIZADOS para movimiento fluido
+            if (joystick.active) {
+                moveX += joystick.x;
+                moveY += joystick.y;
             }
             
-            // Normalizar diagonal
+            // Aplicar movimiento si hay input
             if (moveX !== 0 || moveY !== 0) {
+                // Normalizar para movimiento diagonal uniforme
                 const length = Math.sqrt(moveX * moveX + moveY * moveY);
                 moveX = (moveX / length) * player.speed;
                 moveY = (moveY / length) * player.speed;
@@ -538,14 +716,14 @@
                 const dist = Math.hypot(dx, dy);
                 
                 if (dist > 25) {
-                    follower.x += (dx / dist) * player.speed * 0.8;
-                    follower.y += (dy / dist) * player.speed * 0.8;
+                    follower.x += (dx / dist) * player.speed * 0.7;
+                    follower.y += (dy / dist) * player.speed * 0.7;
                 }
             }
 
             // Actualizar enemigos
             for (let enemy of enemies) {
-                // Movimiento aleatorio
+                // Movimiento más natural
                 if (Math.random() < 0.02) {
                     const angle = Math.random() * Math.PI * 2;
                     enemy.dx = Math.cos(angle) * enemy.speed;
@@ -574,15 +752,28 @@
                         gameOver();
                     }
                 }
+                
+                // Colisión con seguidores
+                for (let i = followers.length - 1; i >= 0; i--) {
+                    const follower = followers[i];
+                    if (Math.hypot(follower.x - enemy.x, follower.y - enemy.y) < follower.size/2 + enemy.size/2) {
+                        followers.splice(i, 1);
+                        followerSpan.textContent = followers.length;
+                        break;
+                    }
+                }
             }
 
             // Combate con jefe
             if (boss) {
                 const distToBoss = Math.hypot(player.x - boss.x, player.y - boss.y);
                 
-                if (distToBoss < 60) {
+                if (distToBoss < 70) {
                     if (followers.length >= bossRequiredFollowers) {
-                        boss.health -= 0.5;
+                        boss.health -= 0.8; // Daño más rápido
+                        
+                        // Pequeño glitch al dañar al boss
+                        if (Math.random() < 0.1) triggerGlitch(0.2, 50);
                         
                         if (boss.health <= 0) {
                             victory();
@@ -598,7 +789,7 @@
                     powerUpActive = false;
                     powerUpSpan.textContent = '-';
                     if (powerUpType === 'speed') {
-                        player.speed = 2.5;
+                        player.speed = 3.2;
                     }
                 }
             }
@@ -622,8 +813,8 @@
             }
 
             // Dibujar ciudadanos
-            ctx.fillStyle = '#78e08f';
             for (let citizen of citizens) {
+                ctx.fillStyle = citizen.color;
                 ctx.beginPath();
                 ctx.arc(citizen.x, citizen.y, citizen.size/2, 0, Math.PI * 2);
                 ctx.fill();
@@ -633,7 +824,6 @@
                 ctx.arc(citizen.x - 3, citizen.y - 3, 2, 0, Math.PI * 2);
                 ctx.arc(citizen.x + 3, citizen.y - 3, 2, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = '#78e08f';
             }
 
             // Dibujar enemigos
@@ -642,11 +832,16 @@
                 ctx.beginPath();
                 ctx.arc(enemy.x, enemy.y, enemy.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                // Ojos
+                // Ojos enojados
                 ctx.fillStyle = 'white';
                 ctx.beginPath();
                 ctx.arc(enemy.x - 4, enemy.y - 4, 3, 0, Math.PI * 2);
                 ctx.arc(enemy.x + 4, enemy.y - 4, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(enemy.x - 5, enemy.y - 5, 1.5, 0, Math.PI * 2);
+                ctx.arc(enemy.x + 3, enemy.y - 5, 1.5, 0, Math.PI * 2);
                 ctx.fill();
             }
 
@@ -656,7 +851,7 @@
                 ctx.beginPath();
                 ctx.arc(follower.x, follower.y, follower.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                // Bandera
+                // Bandera revolucionaria
                 ctx.fillStyle = '#e55039';
                 ctx.fillRect(follower.x + 5, follower.y - 10, 6, 12);
                 ctx.fillStyle = '#f6b93b';
@@ -675,7 +870,7 @@
                 ctx.arc(boss.x, boss.y, boss.size/2, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Corona
+                // Corona opresora
                 ctx.fillStyle = '#f6b93b';
                 ctx.beginPath();
                 ctx.moveTo(boss.x - 20, boss.y - 20);
@@ -690,6 +885,8 @@
                 ctx.fillRect(boss.x - 50, boss.y - 50, 100, 10);
                 ctx.fillStyle = '#e55039';
                 ctx.fillRect(boss.x - 50, boss.y - 50, 100 * (boss.health / boss.maxHealth), 10);
+                ctx.strokeStyle = '#fff';
+                ctx.strokeRect(boss.x - 50, boss.y - 50, 100, 10);
             }
 
             // Dibujar jugador
@@ -698,14 +895,19 @@
             ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Ojos
+            // Ojos del líder
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(player.x - 4, player.y - 4, 3, 0, Math.PI * 2);
             ctx.arc(player.x + 4, player.y - 4, 3, 0, Math.PI * 2);
             ctx.fill();
+            ctx.fillStyle = '#0c2461';
+            ctx.beginPath();
+            ctx.arc(player.x - 5, player.y - 5, 1.5, 0, Math.PI * 2);
+            ctx.arc(player.x + 3, player.y - 5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
             
-            // Bandera líder
+            // Bandera del líder
             ctx.fillStyle = '#e55039';
             ctx.fillRect(player.x + 8, player.y - 12, 8, 16);
             ctx.fillStyle = '#f6b93b';
@@ -716,7 +918,7 @@
             ctx.closePath();
             ctx.fill();
             
-            // Power-up effect
+            // Efecto power-up
             if (powerUpActive) {
                 ctx.strokeStyle = powerUpType === 'speed' ? '#78e08f' : 
                                  powerUpType === 'protection' ? '#4a69bd' : '#f6b93b';
@@ -724,27 +926,42 @@
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.size/2 + 5, 0, Math.PI * 2);
                 ctx.stroke();
+                
+                // Timer visual
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${Math.ceil(powerUpTimer / 60)}s`, player.x, player.y + 30);
             }
         }
 
-        // ========== ESTADOS DEL JUEGO ==========
+        // ========== ESTADOS DEL JUEGO CON GLITCH ==========
         function gameOver() {
             gameRunning = false;
+            triggerDefeatGlitch(); // GLITCH ÉPICO DE DERROTA
+            
             document.getElementById('gameOverText').innerHTML = 
-                `Reuniste ${followers.length} seguidores.<br>Necesitabas ${bossRequiredFollowers}.`;
+                `✖ REVOLUCIÓN FRACASADA ✖<br><br>` +
+                `Reuniste ${followers.length} de ${bossRequiredFollowers} seguidores.<br>` +
+                `"El sistema nos venció... por ahora."`;
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
 
         function victory() {
             gameRunning = false;
+            triggerVictoryGlitch(); // GLITCH ÉPICO DE VICTORIA
+            
             document.getElementById('winText').innerHTML = 
-                `¡Derrotaste al opresor con ${followers.length} seguidores!`;
+                `✨ ¡EL PUEBLO VENCIÓ! ✨<br><br>` +
+                `Derrotaste al opresor con ${followers.length} seguidores.<br>` +
+                `"La unión hace la fuerza."`;
             document.getElementById('winScreen').classList.remove('hidden');
         }
 
         // ========== INICIALIZACIÓN ==========
         function initialize() {
-            setupControls();
+            setupKeyboardControls();
+            setupJoystick();
             
             // Botones
             document.getElementById('startBtn').addEventListener('click', () => {
@@ -762,9 +979,18 @@
                 initGame();
             });
             
-            // Botón power-up para PC
-            document.getElementById('screenshotBtn').addEventListener('click', activatePowerUp);
+            // Botones táctiles
             document.getElementById('recruitBtn').addEventListener('click', recruitCitizens);
+            document.getElementById('recruitBtn').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                recruitCitizens();
+            });
+            
+            document.getElementById('screenshotBtn').addEventListener('click', activatePowerUp);
+            document.getElementById('screenshotBtn').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                activatePowerUp();
+            });
         }
 
         // Game loop
@@ -776,7 +1002,7 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Arrancar
+        // Arrancar todo
         initialize();
         gameLoop();
     </script>
