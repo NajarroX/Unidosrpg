@@ -3,88 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Revolución Colectiva - RPG de lucha contra la opresión</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <title>Revolución Colectiva</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
             user-select: none;
         }
 
         body {
-            font-family: 'Press Start 2P', cursive;
-            background: linear-gradient(to bottom, #0c2461, #1e3799);
-            color: #fff;
-            overflow: hidden;
-            height: 100vh;
+            background: #0c2461;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
             padding: 10px;
-            touch-action: none;
         }
 
-        .game-container {
-            position: relative;
-            width: 100%;
+        .game-wrapper {
             max-width: 800px;
-            height: 100%;
-            max-height: 90vh;
-            margin: 0 auto;
-            border: 5px solid #f6b93b;
+            width: 100%;
+            background: #1e3799;
             border-radius: 10px;
-            overflow: hidden;
+            padding: 10px;
             box-shadow: 0 0 20px rgba(246, 185, 59, 0.5);
-            background-color: #1a1a2e;
         }
 
-        #gameCanvas {
+        canvas {
             display: block;
             width: 100%;
-            height: 100%;
-            background-color: #162447;
+            height: auto;
+            background: #162447;
+            border: 3px solid #f6b93b;
+            border-radius: 5px;
+            cursor: default;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: white;
+            font-size: 14px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .controls-info {
+            margin-top: 10px;
+            color: #f6b93b;
+            font-size: 12px;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .touch-controls {
+            display: none;
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .touch-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            background: #e55039;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .touch-joystick-area {
+            display: none;
+            position: relative;
+            width: 120px;
+            height: 120px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 60px;
+            margin: 10px auto;
+        }
+
+        .joystick-handle {
+            width: 50px;
+            height: 50px;
+            background: #4a69bd;
+            border-radius: 25px;
+            position: absolute;
+            top: 35px;
+            left: 35px;
         }
 
         .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(26, 26, 46, 0.95);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 26, 46, 0.95);
+            padding: 30px;
+            border-radius: 10px;
             text-align: center;
-            padding: 20px;
-            z-index: 10;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .screen h1 {
-            color: #f6b93b;
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
-            margin-bottom: 20px;
-            text-shadow: 3px 3px 0 #e55039;
-            line-height: 1.4;
-        }
-
-        .screen p {
-            margin-bottom: 25px;
-            line-height: 1.6;
-            color: #dff9fb;
+            color: white;
+            z-index: 100;
+            border: 3px solid #f6b93b;
             max-width: 90%;
-            font-size: clamp(0.7rem, 2vw, 1rem);
         }
 
         .screen.hidden {
@@ -92,1753 +119,666 @@
         }
 
         .btn {
-            background-color: #e55039;
+            background: #e55039;
             color: white;
             border: none;
-            padding: 12px 24px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: clamp(0.7rem, 2vw, 1rem);
-            cursor: pointer;
+            padding: 15px 30px;
             margin: 10px;
             border-radius: 5px;
-            transition: all 0.3s;
-            box-shadow: 0 5px 0 #b33939;
-            min-height: 50px;
-        }
-
-        .btn:hover, .btn:active {
-            background-color: #ff793f;
-            transform: translateY(-2px);
-        }
-
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #b33939;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            z-index: 5;
-            pointer-events: none;
-        }
-
-        .keyboard-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #f6b93b;
-            font-size: 0.7rem;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: clamp(0.6rem, 1.5vw, 0.8rem);
-        }
-
-        .keyboard-controls div {
-            margin: 5px 0;
-        }
-
-        .touch-controls {
-            display: none;
-            width: 100%;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 0 10px;
-            pointer-events: none;
-        }
-
-        .joystick-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin-bottom: 20px;
-            margin-left: 10px;
-            pointer-events: auto;
-        }
-
-        .joystick-base {
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        .joystick-handle {
-            width: 60px;
-            height: 60px;
-            background-color: rgba(76, 105, 189, 0.8);
-            border-radius: 50%;
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            transition: transform 0.1s;
-            box-shadow: 0 4px 0 rgba(58, 83, 155, 0.8);
-        }
-
-        .joystick-handle.active {
-            background-color: rgba(246, 185, 59, 0.9);
-        }
-
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            margin-right: 10px;
-            pointer-events: auto;
-        }
-
-        .action-buttons button {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            border: none;
-            background-color: rgba(229, 80, 57, 0.8);
-            color: white;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.6rem;
-            touch-action: manipulation;
-            box-shadow: 0 5px 0 rgba(179, 57, 57, 0.8);
-        }
-
-        .action-buttons button:active {
-            transform: translateY(5px);
-            box-shadow: none;
-        }
-
-        .hud {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            z-index: 5;
-            pointer-events: none;
-        }
-
-        .hud-item {
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 8px;
-            border-radius: 5px;
-            color: white;
-            font-size: clamp(0.6rem, 1.5vw, 0.8rem);
-            min-width: 120px;
-            margin-bottom: 5px;
-            flex: 1;
-            margin: 2px;
-        }
-
-        .hud-item span {
-            color: #f6b93b;
-            display: inline-block;
-            margin-top: 2px;
-        }
-
-        .boss-warning {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(229, 80, 57, 0.9);
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            font-size: clamp(0.8rem, 2vw, 1.2rem);
-            text-align: center;
-            z-index: 20;
-            display: none;
-            animation: pulse 1s infinite;
-            max-width: 90%;
-        }
-
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-
-        .screenshot-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: rgba(26, 188, 156, 0.8);
-            border: none;
-            color: white;
-            font-size: 1.5rem;
+            font-size: 16px;
             cursor: pointer;
-            z-index: 5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 0 rgba(22, 160, 133, 0.8);
-            touch-action: manipulation;
-        }
-
-        .screenshot-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        .screenshot-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            opacity: 0;
-            z-index: 15;
-            pointer-events: none;
-        }
-
-        .screenshot-notification {
-            position: absolute;
-            bottom: 80px;
-            right: 20px;
-            background-color: rgba(26, 188, 156, 0.9);
-            color: white;
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 0.6rem;
-            z-index: 5;
-            display: none;
-            max-width: 150px;
-        }
-
-        .instructions {
-            margin-top: 10px;
-            font-size: clamp(0.6rem, 1.5vw, 0.8rem);
-            text-align: center;
-            max-width: 800px;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 10px;
-            width: 100%;
-        }
-
-        .instructions h3 {
-            color: #f6b93b;
-            margin-bottom: 8px;
-            font-size: clamp(0.7rem, 1.8vw, 0.9rem);
-        }
-
-        .instructions ul {
-            list-style-type: none;
-            text-align: left;
-            display: inline-block;
-            margin-top: 5px;
-        }
-
-        .instructions li {
-            margin-bottom: 6px;
-            line-height: 1.4;
-        }
-
-        /* Estilos para móviles en orientación horizontal */
-        @media (max-height: 500px) {
-            .game-container {
-                max-height: 80vh;
-            }
-            
-            .hud {
-                top: 5px;
-            }
-            
-            .hud-item {
-                padding: 5px;
-                font-size: 0.5rem;
-                min-width: 90px;
-            }
-            
-            .screenshot-btn {
-                bottom: 10px;
-                right: 10px;
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-            }
-            
-            .screenshot-notification {
-                bottom: 60px;
-                right: 10px;
-            }
         }
 
         @media (max-width: 768px) {
-            .game-container {
-                border-width: 3px;
-                max-height: 85vh;
-            }
-            
-            .keyboard-controls {
+            .keyboard-only {
                 display: none;
             }
-            
             .touch-controls {
                 display: flex;
             }
-            
-            .joystick-container {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .joystick-handle {
-                width: 50px;
-                height: 50px;
-                top: 25px;
-                left: 25px;
-            }
-            
-            .action-buttons button {
-                width: 60px;
-                height: 60px;
-                font-size: 0.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 5px;
-            }
-            
-            .game-container {
-                max-height: 82vh;
-            }
-            
-            .screen {
-                padding: 15px;
-            }
-            
-            .btn {
-                padding: 10px 20px;
-                min-height: 45px;
-            }
-            
-            .joystick-container {
-                width: 90px;
-                height: 90px;
-            }
-            
-            .joystick-handle {
-                width: 45px;
-                height: 45px;
-                top: 22.5px;
-                left: 22.5px;
-            }
-            
-            .action-buttons button {
-                width: 55px;
-                height: 55px;
-                font-size: 0.45rem;
-            }
-            
-            .hud-item {
-                padding: 6px;
-                font-size: 0.5rem;
-                min-width: 100px;
-            }
-            
-            .instructions {
-                margin-top: 5px;
-                padding: 8px;
-            }
-        }
-
-        /* Orientación vertical muy estrecha */
-        @media (max-width: 350px) {
-            .joystick-container {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .joystick-handle {
-                width: 40px;
-                height: 40px;
-                top: 20px;
-                left: 20px;
-            }
-            
-            .action-buttons button {
-                width: 50px;
-                height: 50px;
-                font-size: 0.4rem;
-            }
-            
-            .hud-item {
-                font-size: 0.45rem;
-                min-width: 85px;
-                padding: 4px;
+            .touch-joystick-area {
+                display: block;
             }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <canvas id="gameCanvas"></canvas>
-        
-        <div class="screen" id="startScreen">
-            <h1>REVOLUCIÓN COLECTIVA</h1>
-            <p>El sistema opresor ha tomado el control. Recluta aliados en las calles, forma una turba poderosa y enfréntate a los jefes de la opresión.</p>
-            <p>¡Solo unidos podremos vencer!</p>
-            <button class="btn" id="startBtn">INICIAR REVOLUCIÓN</button>
-            <button class="btn" id="instructionsBtn">INSTRUCCIONES</button>
-        </div>
-        
-        <div class="screen hidden" id="instructionsScreen">
-            <h1>CÓMO JUGAR</h1>
-            <div style="text-align: left; max-width: 90%;">
-                <p><strong>OBJETIVO:</strong> Recluta seguidores para formar una turba y derrotar al jefe opresor.</p>
-                <p><strong>CONTROLES:</strong></p>
-                <ul>
-                    <li><span style="color:#f6b93b;">PC:</span> Usa las teclas WASD o flechas para moverte</li>
-                    <li><span style="color:#f6b93b;">MÓVIL:</span> Usa el joystick táctil para moverte</li>
-                    <li><span style="color:#f6b93b;">RECLUTAR:</span> Acércate a los ciudadanos y presiona el botón RECLUTAR para sumarlos a tu causa</li>
-                    <li><span style="color:#f6b93b;">CAPTURA:</span> Toma capturas de pantalla (botón de cámara) para obtener power-ups</li>
-                </ul>
-                <p><strong>MECÁNICAS:</strong></p>
-                <ul>
-                    <li>Cada jefe requiere un número mínimo de seguidores para ser derrotado</li>
-                    <li>Los seguidores te siguen en formación</li>
-                    <li>Los power-ups de captura te dan ventajas temporales</li>
-                    <li>Evita a los guardias opresores que intentarán dispersar tu turba</li>
-                </ul>
-            </div>
-            <button class="btn" id="backBtn">VOLVER</button>
-        </div>
-        
-        <div class="screen hidden" id="gameOverScreen">
-            <h1>¡REVOLUCIÓN FALLIDA!</h1>
-            <p id="gameOverText">El sistema opresor ha vencido... por ahora.</p>
-            <p id="followersLost"></p>
-            <button class="btn" id="restartBtn">INTENTAR DE NUEVO</button>
-        </div>
-        
-        <div class="screen hidden" id="winScreen">
-            <h1>¡VICTORIA COLECTIVA!</h1>
-            <p id="winText">El pueblo unido ha derrotado al opresor. ¡La revolución triunfa!</p>
-            <p id="followersUsed"></p>
-            <button class="btn" id="winRestartBtn">NUEVA REVOLUCIÓN</button>
-        </div>
+    <div class="game-wrapper">
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
         
         <div class="hud">
-            <div class="hud-item">SEGUIDORES: <span id="followerCount">0</span></div>
-            <div class="hud-item">OBJETIVO: <span id="requiredFollowers">0</span></div>
-            <div class="hud-item">POWER-UPS: <span id="powerUpCount">0</span></div>
+            <div>👥 SEGUIDORES: <span id="followerCount">0</span></div>
+            <div>🎯 OBJETIVO: <span id="requiredFollowers">0</span></div>
+            <div>⚡ POWER-UP: <span id="powerUpStatus">-</span></div>
         </div>
-        
-        <div class="boss-warning" id="bossWarning">¡JEFE OPRESOR ENFRENTADO!</div>
-        
-        <div class="controls">
-            <div class="keyboard-controls">
-                <div>W/↑: ARRIBA | A/←: IZQUIERDA | S/↓: ABAJO | D/→: DERECHA</div>
-                <div>ESPACIO: INTERACTUAR | C: TOMAR CAPTURA (POWER-UP)</div>
+
+        <!-- Controles táctiles -->
+        <div class="touch-controls">
+            <div class="touch-joystick-area" id="joystickArea">
+                <div class="joystick-handle" id="joystickHandle"></div>
             </div>
-            
-            <div class="touch-controls">
-                <div class="joystick-container" id="joystickContainer">
-                    <div class="joystick-base"></div>
-                    <div class="joystick-handle" id="joystickHandle"></div>
-                </div>
-                
-                <div class="action-buttons">
-                    <button id="touchInteract">RECLUTAR</button>
-                    <button id="touchScreenshot">CAPTURA</button>
-                </div>
-            </div>
+            <button class="touch-btn" id="recruitBtn">RECLUTAR</button>
+            <button class="touch-btn" id="screenshotBtn">📷 POWER-UP</button>
         </div>
-        
-        <button class="screenshot-btn" id="screenshotBtn">📷</button>
-        <div class="screenshot-notification" id="screenshotNotification">¡Power-up activado!</div>
-        <div class="screenshot-effect" id="screenshotEffect"></div>
-    </div>
-    
-    <div class="instructions">
-        <h3>¡LA UNIÓN HACE LA FUERZA!</h3>
-        <p>Cada partida genera un laberinto aleatorio. Recluta a suficientes ciudadanos antes de enfrentar al jefe opresor.</p>
-        <p>Las capturas de pantalla otorgan power-ups temporales: velocidad, protección o reclutamiento instantáneo.</p>
+
+        <div class="controls-info keyboard-only">
+            <p>🎮 CONTROLES PC: WASD / FLECHAS = MOVER | ESPACIO = RECLUTAR | C = POWER-UP</p>
+        </div>
+
+        <!-- Pantallas -->
+        <div id="startScreen" class="screen">
+            <h1 style="color: #f6b93b;">REVOLUCIÓN COLECTIVA</h1>
+            <p style="margin: 20px 0;">¡Recluta seguidores y derrota al jefe opresor!</p>
+            <button class="btn" id="startBtn">COMENZAR</button>
+        </div>
+
+        <div id="gameOverScreen" class="screen hidden">
+            <h1 style="color: #e55039;">DERROTADO</h1>
+            <p id="gameOverText" style="margin: 20px 0;"></p>
+            <button class="btn" id="restartBtn">REINTENTAR</button>
+        </div>
+
+        <div id="winScreen" class="screen hidden">
+            <h1 style="color: #78e08f;">¡VICTORIA!</h1>
+            <p id="winText" style="margin: 20px 0;"></p>
+            <button class="btn" id="playAgainBtn">JUGAR DE NUEVO</button>
+        </div>
     </div>
 
     <script>
-        // Detección de dispositivo táctil
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        
-        // Elementos del DOM
+        // ========== CONFIGURACIÓN INICIAL ==========
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const startScreen = document.getElementById('startScreen');
-        const instructionsScreen = document.getElementById('instructionsScreen');
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const winScreen = document.getElementById('winScreen');
-        const startBtn = document.getElementById('startBtn');
-        const instructionsBtn = document.getElementById('instructionsBtn');
-        const backBtn = document.getElementById('backBtn');
-        const restartBtn = document.getElementById('restartBtn');
-        const winRestartBtn = document.getElementById('winRestartBtn');
-        const followerCountElement = document.getElementById('followerCount');
-        const requiredFollowersElement = document.getElementById('requiredFollowers');
-        const powerUpCountElement = document.getElementById('powerUpCount');
-        const bossWarning = document.getElementById('bossWarning');
-        const gameOverText = document.getElementById('gameOverText');
-        const followersLost = document.getElementById('followersLost');
-        const winText = document.getElementById('winText');
-        const followersUsed = document.getElementById('followersUsed');
-        const screenshotBtn = document.getElementById('screenshotBtn');
-        const screenshotNotification = document.getElementById('screenshotNotification');
-        const screenshotEffect = document.getElementById('screenshotEffect');
-        const touchInteract = document.getElementById('touchInteract');
-        const touchScreenshot = document.getElementById('touchScreenshot');
-        const joystickContainer = document.getElementById('joystickContainer');
-        const joystickHandle = document.getElementById('joystickHandle');
-        
-        // Variables del juego
+        const isTouchDevice = 'ontouchstart' in window;
+
+        // Elementos DOM
+        const followerSpan = document.getElementById('followerCount');
+        const requiredSpan = document.getElementById('requiredFollowers');
+        const powerUpSpan = document.getElementById('powerUpStatus');
+
+        // ========== VARIABLES DEL JUEGO ==========
         let gameRunning = false;
-        let player = {};
+        
+        // Jugador
+        let player = {
+            x: 100,
+            y: 100,
+            size: 16,
+            speed: 2.5,
+            color: '#4a69bd'
+        };
+
+        // Colecciones
         let followers = [];
         let citizens = [];
         let enemies = [];
         let boss = null;
-        let maze = [];
-        let mazeSize = 15;
-        let tileSize = 40;
-        let powerUps = 0;
+
+        // Laberinto simple (8x8)
+        let maze = [
+            [1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,1],
+            [1,0,1,1,1,0,1,1],
+            [1,0,1,0,0,0,0,1],
+            [1,0,0,0,1,1,0,1],
+            [1,1,1,0,1,0,0,1],
+            [1,0,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,1]
+        ];
+
+        let mazeSize = 8;
+        let tileSize = 60;
+
+        // Jefe
+        let bossRequiredFollowers = 5;
         let powerUpActive = false;
-        let powerUpType = '';
         let powerUpTimer = 0;
-        let bossRequiredFollowers = 0;
-        let keys = {};
-        
-        // Variables para joystick táctil
+        let powerUpType = '';
+
+        // Controles
+        let keys = {
+            w: false, a: false, s: false, d: false,
+            arrowup: false, arrowdown: false, arrowleft: false, arrowright: false,
+            space: false
+        };
+
+        // Joystick
         let joystickActive = false;
-        let joystickStartX = 0;
-        let joystickStartY = 0;
-        let joystickCurrentX = 0;
-        let joystickCurrentY = 0;
-        let joystickRadius = 50;
-        
-        // Ajustar tamaño del canvas al contenedor
-        function resizeCanvas() {
-            const container = document.querySelector('.game-container');
-            const containerWidth = container.clientWidth;
-            const containerHeight = container.clientHeight;
-            
-            // Establecer tamaño del canvas
-            canvas.width = containerWidth;
-            canvas.height = containerHeight;
-            
-            // Recalcular tamaño de tiles basado en el tamaño del canvas
-            tileSize = Math.min(containerWidth, containerHeight) / 20;
-            
-            // Recalcular tamaño del laberinto si el juego está en ejecución
-            if (gameRunning) {
-                mazeSize = Math.floor(Math.min(containerWidth, containerHeight) / tileSize) - 2;
-                mazeSize = Math.max(10, Math.min(mazeSize, 25)); // Limitar entre 10 y 25
-                
-                // Regenerar el juego con el nuevo tamaño
-                initGame();
-            }
-        }
-        
-        // Configuración de pantallas
-        startBtn.addEventListener('click', () => {
-            startScreen.classList.add('hidden');
-            resizeCanvas();
-            initGame();
-            gameRunning = true;
-        });
-        
-        instructionsBtn.addEventListener('click', () => {
-            startScreen.classList.add('hidden');
-            instructionsScreen.classList.remove('hidden');
-        });
-        
-        backBtn.addEventListener('click', () => {
-            instructionsScreen.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-        });
-        
-        restartBtn.addEventListener('click', () => {
-            gameOverScreen.classList.add('hidden');
-            resizeCanvas();
-            initGame();
-            gameRunning = true;
-        });
-        
-        winRestartBtn.addEventListener('click', () => {
-            winScreen.classList.add('hidden');
-            resizeCanvas();
-            initGame();
-            gameRunning = true;
-        });
-        
-        // Controles de teclado
-        document.addEventListener('keydown', (e) => {
-            keys[e.key.toLowerCase()] = true;
-            
-            // Tecla C para captura de pantalla (power-up)
-            if (e.key === 'c' || e.key === 'C') {
-                takeScreenshot();
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-        });
-        
-        // Configurar joystick táctil
-        function setupJoystick() {
-            if (!isTouchDevice) return;
-            
-            // Mostrar controles táctiles
-            document.querySelector('.keyboard-controls').style.display = 'none';
-            document.querySelector('.touch-controls').style.display = 'flex';
-            
-            // Configurar eventos táctiles para joystick
-            joystickContainer.addEventListener('touchstart', handleJoystickStart, { passive: false });
-            document.addEventListener('touchmove', handleJoystickMove, { passive: false });
-            document.addEventListener('touchend', handleJoystickEnd, { passive: false });
-            
-            // Configurar botón de interacción táctil
-            touchInteract.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                keys[' '] = true; // Simular espacio
-                
-                // Procesar reclutamiento inmediatamente
-                processRecruitment();
-            });
-            
-            touchInteract.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                keys[' '] = false;
-            });
-            
-            // Configurar botón de captura táctil
-            touchScreenshot.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                takeScreenshot();
-            });
-        }
-        
-        // Manejar inicio del joystick
-        function handleJoystickStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = joystickContainer.getBoundingClientRect();
-            
-            joystickStartX = rect.left + rect.width / 2;
-            joystickStartY = rect.top + rect.height / 2;
-            joystickCurrentX = touch.clientX;
-            joystickCurrentY = touch.clientY;
-            joystickActive = true;
-            joystickHandle.classList.add('active');
-            
-            updateJoystickPosition();
-        }
-        
-        // Manejar movimiento del joystick
-        function handleJoystickMove(e) {
-            if (!joystickActive) return;
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            joystickCurrentX = touch.clientX;
-            joystickCurrentY = touch.clientY;
-            
-            updateJoystickPosition();
-        }
-        
-        // Manejar fin del joystick
-        function handleJoystickEnd(e) {
-            if (!joystickActive) return;
-            e.preventDefault();
-            
-            joystickActive = false;
-            joystickHandle.classList.remove('active');
-            
-            // Restablecer posición del joystick
-            joystickHandle.style.transform = 'translate(0, 0)';
-            
-            // Detener movimiento del jugador
-            keys['w'] = false;
-            keys['s'] = false;
-            keys['a'] = false;
-            keys['d'] = false;
-        }
-        
-        // Actualizar posición del joystick y controles
-        function updateJoystickPosition() {
-            if (!joystickActive) return;
-            
-            // Calcular distancia desde el centro
-            let dx = joystickCurrentX - joystickStartX;
-            let dy = joystickCurrentY - joystickStartY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Limitar al radio del joystick
-            if (distance > joystickRadius) {
-                dx = (dx / distance) * joystickRadius;
-                dy = (dy / distance) * joystickRadius;
-            }
-            
-            // Actualizar posición visual del joystick
-            joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
-            
-            // Convertir a controles de teclado
-            const deadZone = 10; // Zona muerta para evitar movimiento accidental
-            
-            // Resetear teclas
-            keys['w'] = false;
-            keys['s'] = false;
-            keys['a'] = false;
-            keys['d'] = false;
-            
-            // Establecer teclas basadas en dirección
-            if (dy < -deadZone) keys['w'] = true; // Arriba
-            if (dy > deadZone) keys['s'] = true;  // Abajo
-            if (dx < -deadZone) keys['a'] = true; // Izquierda
-            if (dx > deadZone) keys['d'] = true;  // Derecha
-        }
-        
-        // Botón de captura de pantalla
-        screenshotBtn.addEventListener('click', takeScreenshot);
-        
-        // Función para procesar reclutamiento de ciudadanos
-        function processRecruitment() {
-            if (!gameRunning) return;
-            
-            // Variable para contar cuántos ciudadanos fueron reclutados
-            let recruitedCount = 0;
-            
-            // Reclutar ciudadanos cercanos
-            for (let i = citizens.length - 1; i >= 0; i--) {
-                const citizen = citizens[i];
-                const dist = Math.sqrt(
-                    Math.pow(player.x - citizen.x, 2) + 
-                    Math.pow(player.y - citizen.y, 2)
-                );
-                
-                // Distancia de reclutamiento ajustada según tileSize
-                const recruitmentDistance = tileSize * 1.2;
-                
-                if (dist < recruitmentDistance) {
-                    followers.push({
-                        x: citizen.x,
-                        y: citizen.y,
-                        following: followers.length > 0 ? followers[followers.length - 1] : player,
-                        id: followers.length,
-                        color: '#f6b93b',
-                        size: tileSize * 0.25
-                    });
-                    citizens.splice(i, 1);
-                    recruitedCount++;
-                }
-            }
-            
-            // Actualizar contador de seguidores en el HUD
-            if (recruitedCount > 0) {
-                followerCountElement.textContent = followers.length;
-                
-                // Efecto visual de reclutamiento
-                ctx.fillStyle = 'rgba(120, 224, 143, 0.7)';
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, tileSize * 1.5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
-        // Función para tomar captura de pantalla (power-up)
-        function takeScreenshot() {
-            if (!gameRunning) return;
-            
-            // Efecto visual de captura
-            screenshotEffect.style.opacity = '0.7';
-            setTimeout(() => {
-                screenshotEffect.style.opacity = '0';
-            }, 200);
-            
-            // Mostrar notificación
-            screenshotNotification.style.display = 'block';
-            setTimeout(() => {
-                screenshotNotification.style.display = 'none';
-            }, 2000);
-            
-            // Obtener power-up aleatorio
-            const powerUpTypes = ['speed', 'protection', 'recruit'];
-            powerUpType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-            powerUpActive = true;
-            powerUpTimer = 300; // 5 segundos a 60 FPS
-            powerUps++;
-            powerUpCountElement.textContent = powerUps;
-            
-            // Aplicar efecto según tipo de power-up
-            switch(powerUpType) {
-                case 'speed':
-                    player.speed = 4; // Aumentar velocidad (de 3 a 4)
-                    break;
-                case 'protection':
-                    // Los seguidores no pueden ser dispersados temporalmente
-                    break;
-                case 'recruit':
-                    // Reclutar automáticamente ciudadanos cercanos
-                    for (let i = citizens.length - 1; i >= 0; i--) {
-                        const citizen = citizens[i];
-                        const dist = Math.sqrt(
-                            Math.pow(player.x - citizen.x, 2) + 
-                            Math.pow(player.y - citizen.y, 2)
-                        );
-                        
-                        if (dist < tileSize * 2) {
-                            followers.push({
-                                x: citizen.x,
-                                y: citizen.y,
-                                following: followers.length > 0 ? followers[followers.length - 1] : player,
-                                id: followers.length,
-                                color: '#f6b93b',
-                                size: tileSize * 0.25
-                            });
-                            citizens.splice(i, 1);
-                        }
-                    }
-                    followerCountElement.textContent = followers.length;
-                    break;
-            }
-        }
-        
-        // Inicialización del juego
+        let joystickX = 0;
+        let joystickY = 0;
+
+        // ========== FUNCIONES PRINCIPALES ==========
         function initGame() {
-            // Reiniciar variables
-            player = {
-                x: tileSize * 2,
-                y: tileSize * 2,
-                size: tileSize * 0.5,
-                speed: 3, // VELOCIDAD REDUCIDA de 5 a 3
-                color: '#4a69bd'
-            };
-            
+            // Resetear jugador
+            player.x = 100;
+            player.y = 100;
+            player.speed = 2.5;
+
+            // Resetear colecciones
             followers = [];
             citizens = [];
             enemies = [];
-            powerUps = 0;
-            powerUpActive = false;
-            powerUpTimer = 0;
-            
-            // Ajustar tamaño del laberintos basado en el canvas
-            mazeSize = Math.floor(Math.min(canvas.width, canvas.height) / tileSize) - 2;
-            mazeSize = Math.max(10, Math.min(mazeSize, 25)); // Limitar entre 10 y 25
-            
-            // Generar laberinto mejorado
-            generateImprovedMaze();
-            
-            // Colocar ciudadanos
-            placeCitizens();
-            
-            // Colocar enemigos
-            placeEnemies();
-            
-            // Crear jefe
-            createBoss();
-            
-            // Actualizar HUD
-            followerCountElement.textContent = followers.length;
-            powerUpCountElement.textContent = powerUps;
-            requiredFollowersElement.textContent = bossRequiredFollowers;
-        }
-        
-        // Generar laberinto mejorado con algoritmo de Prim
-        function generateImprovedMaze() {
-            // Inicializar laberinto lleno de paredes (1 = pared, 0 = camino)
-            maze = Array(mazeSize).fill().map(() => Array(mazeSize).fill(1));
-            
-            // Lista de fronteras (paredes que pueden convertirse en caminos)
-            let frontiers = [];
-            
-            // Elegir celda inicial aleatoria
-            const startX = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-            const startY = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-            
-            // Marcar como camino
-            maze[startY][startX] = 0;
-            
-            // Añadir celdas vecinas como fronteras
-            addFrontiers(startX, startY, frontiers);
-            
-            while (frontiers.length > 0) {
-                // Elegir una frontera aleatoria
-                const randomIndex = Math.floor(Math.random() * frontiers.length);
-                const [x, y] = frontiers[randomIndex];
+
+            // Crear ciudadanos (8-12)
+            const numCitizens = 8 + Math.floor(Math.random() * 5);
+            for (let i = 0; i < numCitizens; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                } while (maze[y][x] !== 0 || (x === 1 && y === 1));
                 
-                // Eliminar de la lista de fronteras
-                frontiers.splice(randomIndex, 1);
+                citizens.push({
+                    x: x * tileSize + tileSize/2,
+                    y: y * tileSize + tileSize/2,
+                    size: 12,
+                    color: '#78e08f'
+                });
+            }
+
+            // Crear enemigos (3-5)
+            const numEnemies = 3 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < numEnemies; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                } while (maze[y][x] !== 0 || Math.abs(x - 1) + Math.abs(y - 1) < 3);
                 
-                // Obtener celdas vecinas que ya son caminos
-                const neighborCells = [];
-                const directions = [[0, -2], [2, 0], [0, 2], [-2, 0]];
-                
-                for (const [dx, dy] of directions) {
-                    const nx = x + dx;
-                    const ny = y + dy;
-                    
-                    if (nx >= 0 && nx < mazeSize && ny >= 0 && ny < mazeSize && maze[ny][nx] === 0) {
-                        neighborCells.push([nx, ny]);
-                    }
-                }
-                
-                // Si hay al menos un vecino que es camino
-                if (neighborCells.length > 0) {
-                    // Elegir un vecino aleatorio
-                    const [nx, ny] = neighborCells[Math.floor(Math.random() * neighborCells.length)];
-                    
-                    // Conectar la frontera con el vecino (hacer camino la celda entre ellos)
-                    maze[(y + ny) / 2][(x + nx) / 2] = 0;
-                    maze[y][x] = 0;
-                    
-                    // Añadir nuevas fronteras
-                    addFrontiers(x, y, frontiers);
-                }
+                enemies.push({
+                    x: x * tileSize + tileSize/2,
+                    y: y * tileSize + tileSize/2,
+                    size: 16,
+                    color: '#e55039',
+                    speed: 1,
+                    dx: 0,
+                    dy: 0
+                });
             }
+
+            // Crear jefe (esquina opuesta)
+            let bossX, bossY;
+            do {
+                bossX = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                bossY = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+            } while (maze[bossY][bossX] !== 0 || Math.abs(bossX - 1) + Math.abs(bossY - 1) < 5);
             
-            // Asegurar que todos los bordes sean paredes
-            for (let i = 0; i < mazeSize; i++) {
-                maze[0][i] = 1;
-                maze[mazeSize - 1][i] = 1;
-                maze[i][0] = 1;
-                maze[i][mazeSize - 1] = 1;
-            }
-            
-            // Crear al menos una entrada y una salida
-            createEntrances();
-            
-            // Asegurar conectividad completa
-            ensureConnectivity();
-            
-            // Posicionar al jugador cerca de la entrada
-            positionPlayer();
-        }
-        
-        // Añadir celdas vecinas como fronteras
-        function addFrontiers(x, y, frontiers) {
-            const directions = [[0, -2], [2, 0], [0, 2], [-2, 0]];
-            
-            for (const [dx, dy] of directions) {
-                const nx = x + dx;
-                const ny = y + dy;
-                
-                if (nx >= 1 && nx < mazeSize - 1 && ny >= 1 && ny < mazeSize - 1 && maze[ny][nx] === 1) {
-                    // Verificar que no esté ya en la lista
-                    let alreadyInList = false;
-                    for (const [fx, fy] of frontiers) {
-                        if (fx === nx && fy === ny) {
-                            alreadyInList = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!alreadyInList) {
-                        frontiers.push([nx, ny]);
-                    }
-                }
-            }
-        }
-        
-        // Crear entradas y salidas
-        function createEntrances() {
-            // Crear entrada en un borde aleatorio
-            const entranceSide = Math.floor(Math.random() * 4);
-            let entranceX, entranceY;
-            
-            switch(entranceSide) {
-                case 0: // Arriba
-                    entranceX = Math.floor(Math.random() * (mazeSize - 4)) + 2;
-                    entranceY = 1;
-                    break;
-                case 1: // Derecha
-                    entranceX = mazeSize - 2;
-                    entranceY = Math.floor(Math.random() * (mazeSize - 4)) + 2;
-                    break;
-                case 2: // Abajo
-                    entranceX = Math.floor(Math.random() * (mazeSize - 4)) + 2;
-                    entranceY = mazeSize - 2;
-                    break;
-                case 3: // Izquierda
-                    entranceX = 1;
-                    entranceY = Math.floor(Math.random() * (mazeSize - 4)) + 2;
-                    break;
-            }
-            
-            // Hacer camino en la entrada
-            maze[entranceY][entranceX] = 0;
-            
-            // Conectar con el interior
-            const interiorDirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-            for (const [dx, dy] of interiorDirs) {
-                const ix = entranceX + dx;
-                const iy = entranceY + dy;
-                
-                if (ix >= 1 && ix < mazeSize - 1 && iy >= 1 && iy < mazeSize - 1) {
-                    maze[iy][ix] = 0;
-                    break;
-                }
-            }
-        }
-        
-        // Asegurar que el laberinto esté completamente conectado
-        function ensureConnectivity() {
-            // Encontrar todas las celdas de camino
-            const roadCells = [];
-            for (let y = 1; y < mazeSize - 1; y++) {
-                for (let x = 1; x < mazeSize - 1; x++) {
-                    if (maze[y][x] === 0) {
-                        roadCells.push([x, y]);
-                    }
-                }
-            }
-            
-            // Conectar grupos aislados
-            if (roadCells.length > 0) {
-                // Usar la primera celda como referencia
-                const [refX, refY] = roadCells[0];
-                
-                // Conectar otras celdas aisladas si las hay
-                for (let i = 1; i < roadCells.length; i++) {
-                    const [x, y] = roadCells[i];
-                    
-                    // Crear un camino simple entre celdas (esto es una simplificación)
-                    // En un algoritmo más complejo, usaríamos flood fill para detectar componentes conectados
-                    if (Math.abs(x - refX) + Math.abs(y - refY) > mazeSize / 2) {
-                        // Crear un camino diagonal simple
-                        const steps = Math.max(Math.abs(x - refX), Math.abs(y - refY));
-                        for (let s = 0; s <= steps; s++) {
-                            const pathX = Math.round(refX + (x - refX) * (s / steps));
-                            const pathY = Math.round(refY + (y - refY) * (s / steps));
-                            
-                            if (pathX >= 1 && pathX < mazeSize - 1 && pathY >= 1 && pathY < mazeSize - 1) {
-                                maze[pathY][pathX] = 0;
-                                
-                                // También hacer camino alrededor para evitar callejones sin salida
-                                if (pathX > 1) maze[pathY][pathX-1] = 0;
-                                if (pathX < mazeSize - 2) maze[pathY][pathX+1] = 0;
-                                if (pathY > 1) maze[pathY-1][pathX] = 0;
-                                if (pathY < mazeSize - 2) maze[pathY+1][pathX] = 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Posicionar al jugador en una entrada
-        function positionPlayer() {
-            // Buscar una entrada en los bordes
-            for (let y = 1; y < mazeSize - 1; y++) {
-                for (let x = 1; x < mazeSize - 1; x++) {
-                    if (maze[y][x] === 0) {
-                        // Verificar si está en un borde
-                        if (x === 1 || x === mazeSize - 2 || y === 1 || y === mazeSize - 2) {
-                            player.x = x * tileSize + tileSize/2;
-                            player.y = y * tileSize + tileSize/2;
-                            return;
-                        }
-                    }
-                }
-            }
-            
-            // Si no se encuentra entrada en el borde, usar una posición aleatoria
-            for (let attempts = 0; attempts < 100; attempts++) {
-                const x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                const y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                
-                if (maze[y][x] === 0) {
-                    player.x = x * tileSize + tileSize/2;
-                    player.y = y * tileSize + tileSize/2;
-                    return;
-                }
-            }
-            
-            // Último recurso: posición por defecto
-            player.x = tileSize * 2;
-            player.y = tileSize * 2;
-        }
-        
-        // Colocar ciudadanos en el laberinto
-        function placeCitizens() {
-            const citizenCount = Math.floor((mazeSize * mazeSize) / 10);
-            
-            for (let i = 0; i < citizenCount; i++) {
-                let placed = false;
-                let attempts = 0;
-                
-                while (!placed && attempts < 100) {
-                    const x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    const y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    
-                    if (maze[y][x] === 0) {
-                        // Verificar que no esté demasiado cerca del jugador
-                        const distToPlayer = Math.sqrt(
-                            Math.pow(player.x/tileSize - x, 2) + 
-                            Math.pow(player.y/tileSize - y, 2)
-                        );
-                        
-                        if (distToPlayer > 3) {
-                            citizens.push({
-                                x: x * tileSize + tileSize/2,
-                                y: y * tileSize + tileSize/2,
-                                size: tileSize * 0.3,
-                                color: '#78e08f',
-                                recruited: false
-                            });
-                            placed = true;
-                        }
-                    }
-                    
-                    attempts++;
-                }
-            }
-        }
-        
-        // Colocar enemigos en el laberinto
-        function placeEnemies() {
-            const enemyCount = Math.floor((mazeSize * mazeSize) / 30);
-            
-            for (let i = 0; i < enemyCount; i++) {
-                let placed = false;
-                let attempts = 0;
-                
-                while (!placed && attempts < 100) {
-                    const x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    const y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    
-                    if (maze[y][x] === 0) {
-                        // Verificar que no esté demasiado cerca del jugador
-                        const distToPlayer = Math.sqrt(
-                            Math.pow(player.x/tileSize - x, 2) + 
-                            Math.pow(player.y/tileSize - y, 2)
-                        );
-                        
-                        if (distToPlayer > 4) {
-                            enemies.push({
-                                x: x * tileSize + tileSize/2,
-                                y: y * tileSize + tileSize/2,
-                                size: tileSize * 0.4,
-                                color: '#e55039',
-                                speed: 1.0, // Velocidad reducida de enemigos
-                                direction: Math.random() * Math.PI * 2,
-                                directionChange: 0
-                            });
-                            placed = true;
-                        }
-                    }
-                    
-                    attempts++;
-                }
-            }
-        }
-        
-        // Crear jefe opresor
-        function createBoss() {
-            // Encontrar una posición lejos del jugador para el jefe
-            let bossX = 0;
-            let bossY = 0;
-            let maxDistance = 0;
-            
-            // Buscar la celda más lejana del jugador
-            for (let y = 1; y < mazeSize - 1; y++) {
-                for (let x = 1; x < mazeSize - 1; x++) {
-                    if (maze[y][x] === 0) {
-                        const dist = Math.sqrt(
-                            Math.pow(player.x/tileSize - x, 2) + 
-                            Math.pow(player.y/tileSize - y, 2)
-                        );
-                        
-                        if (dist > maxDistance) {
-                            maxDistance = dist;
-                            bossX = x;
-                            bossY = y;
-                        }
-                    }
-                }
-            }
-            
-            // Calcular seguidores requeridos (entre 5 y 10, o más para laberintos grandes)
-            bossRequiredFollowers = 5 + Math.floor(Math.random() * 6);
-            if (mazeSize > 15) bossRequiredFollowers += 2;
-            if (mazeSize > 20) bossRequiredFollowers += 3;
-            
-            requiredFollowersElement.textContent = bossRequiredFollowers;
-            
+            bossRequiredFollowers = 5 + Math.floor(Math.random() * 3);
             boss = {
                 x: bossX * tileSize + tileSize/2,
                 y: bossY * tileSize + tileSize/2,
-                size: tileSize * 1.0,
+                size: 40,
                 color: '#8e44ad',
                 health: bossRequiredFollowers * 2,
                 maxHealth: bossRequiredFollowers * 2
             };
+
+            // Actualizar HUD
+            followerSpan.textContent = followers.length;
+            requiredSpan.textContent = bossRequiredFollowers;
+            powerUpSpan.textContent = '-';
+
+            gameRunning = true;
         }
-        
-        // Actualizar lógica del juego
-        function update() {
+
+        // ========== CONTROLES ==========
+        function setupControls() {
+            // Teclado PC
+            window.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase();
+                
+                if (key === 'w' || key === 'arrowup') keys.w = true;
+                if (key === 's' || key === 'arrowdown') keys.s = true;
+                if (key === 'a' || key === 'arrowleft') keys.a = true;
+                if (key === 'd' || key === 'arrowright') keys.d = true;
+                if (key === ' ') {
+                    e.preventDefault();
+                    keys.space = true;
+                    recruitCitizens();
+                }
+                if (key === 'c') {
+                    e.preventDefault();
+                    activatePowerUp();
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                const key = e.key.toLowerCase();
+                
+                if (key === 'w' || key === 'arrowup') keys.w = false;
+                if (key === 's' || key === 'arrowdown') keys.s = false;
+                if (key === 'a' || key === 'arrowleft') keys.a = false;
+                if (key === 'd' || key === 'arrowright') keys.d = false;
+                if (key === ' ') keys.space = false;
+            });
+
+            // Controles táctiles
+            if (isTouchDevice) {
+                // Joystick
+                const joystickArea = document.getElementById('joystickArea');
+                const joystickHandle = document.getElementById('joystickHandle');
+
+                joystickArea.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    joystickActive = true;
+                    const touch = e.touches[0];
+                    const rect = joystickArea.getBoundingClientRect();
+                    const centerX = rect.left + rect.width/2;
+                    const centerY = rect.top + rect.height/2;
+                    updateJoystick(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (!joystickActive) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const rect = joystickArea.getBoundingClientRect();
+                    const centerX = rect.left + rect.width/2;
+                    const centerY = rect.top + rect.height/2;
+                    updateJoystick(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
+                });
+
+                document.addEventListener('touchend', (e) => {
+                    if (!joystickActive) return;
+                    e.preventDefault();
+                    joystickActive = false;
+                    joystickX = 0;
+                    joystickY = 0;
+                    joystickHandle.style.transform = 'translate(0px, 0px)';
+                });
+
+                // Botón reclutar
+                document.getElementById('recruitBtn').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    recruitCitizens();
+                });
+
+                // Botón power-up
+                document.getElementById('screenshotBtn').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    activatePowerUp();
+                });
+            }
+        }
+
+        function updateJoystick(touchX, touchY, centerX, centerY, handle) {
+            let dx = touchX - centerX;
+            let dy = touchY - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const maxDistance = 35;
+            
+            if (distance > maxDistance) {
+                dx = (dx / distance) * maxDistance;
+                dy = (dy / distance) * maxDistance;
+            }
+            
+            handle.style.transform = `translate(${dx}px, ${dy}px)`;
+            
+            // Convertir a dirección (normalizada)
+            joystickX = dx / maxDistance;
+            joystickY = dy / maxDistance;
+        }
+
+        // ========== MECÁNICAS ==========
+        function recruitCitizens() {
             if (!gameRunning) return;
             
+            let recruited = 0;
+            
+            for (let i = citizens.length - 1; i >= 0; i--) {
+                const citizen = citizens[i];
+                const dist = Math.hypot(player.x - citizen.x, player.y - citizen.y);
+                
+                if (dist < 40) {
+                    followers.push({
+                        x: citizen.x,
+                        y: citizen.y,
+                        size: 12,
+                        color: '#f6b93b',
+                        offsetX: 0,
+                        offsetY: 0
+                    });
+                    citizens.splice(i, 1);
+                    recruited++;
+                }
+            }
+            
+            if (recruited > 0) {
+                followerSpan.textContent = followers.length;
+            }
+        }
+
+        function activatePowerUp() {
+            if (!gameRunning) return;
+            
+            powerUpActive = true;
+            powerUpTimer = 180; // 3 segundos
+            
+            const types = ['speed', 'protection', 'recruit'];
+            powerUpType = types[Math.floor(Math.random() * 3)];
+            
+            powerUpSpan.textContent = powerUpType === 'speed' ? '⚡ VELOCIDAD' : 
+                                     powerUpType === 'protection' ? '🛡️ PROTECCIÓN' : 
+                                     '📢 RECLUTAR';
+            
+            if (powerUpType === 'speed') {
+                player.speed = 4;
+            } else if (powerUpType === 'recruit') {
+                // Reclutar ciudadanos cercanos
+                for (let i = citizens.length - 1; i >= 0; i--) {
+                    const citizen = citizens[i];
+                    const dist = Math.hypot(player.x - citizen.x, player.y - citizen.y);
+                    if (dist < 80) {
+                        followers.push({
+                            x: citizen.x,
+                            y: citizen.y,
+                            size: 12,
+                            color: '#f6b93b',
+                            offsetX: 0,
+                            offsetY: 0
+                        });
+                        citizens.splice(i, 1);
+                    }
+                }
+                followerSpan.textContent = followers.length;
+            }
+        }
+
+        // ========== ACTUALIZACIÓN ==========
+        function update() {
+            if (!gameRunning) return;
+
             // Movimiento del jugador
-            let moveX = 0;
-            let moveY = 0;
+            let moveX = 0, moveY = 0;
             
-            // Controles de teclado
-            if (keys['w'] || keys['arrowup']) moveY -= player.speed;
-            if (keys['s'] || keys['arrowdown']) moveY += player.speed;
-            if (keys['a'] || keys['arrowleft']) moveX -= player.speed;
-            if (keys['d'] || keys['arrowright']) moveX += player.speed;
+            // Teclado
+            if (keys.w || keys.arrowup) moveY -= 1;
+            if (keys.s || keys.arrowdown) moveY += 1;
+            if (keys.a || keys.arrowleft) moveX -= 1;
+            if (keys.d || keys.arrowright) moveX += 1;
             
-            // Normalizar movimiento diagonal
-            if (moveX !== 0 && moveY !== 0) {
-                moveX *= 0.7071; // 1/√2
-                moveY *= 0.7071;
+            // Joystick táctil
+            if (joystickActive) {
+                moveX += joystickX;
+                moveY += joystickY;
             }
             
-            // Verificar colisiones con paredes
-            const newX = player.x + moveX;
-            const newY = player.y + moveY;
-            
-            // Convertir posición a coordenadas del laberinto
-            const playerTileX = Math.floor(newX / tileSize);
-            const playerTileY = Math.floor(newY / tileSize);
-            
-            // Verificar si la nueva posición es transitable
-            if (
-                playerTileX >= 0 && playerTileX < mazeSize &&
-                playerTileY >= 0 && playerTileY < mazeSize &&
-                maze[playerTileY][playerTileX] === 0
-            ) {
-                player.x = newX;
-                player.y = newY;
-            } else {
-                // Intentar mover solo en X
-                const playerTileXOnlyX = Math.floor((player.x + moveX) / tileSize);
-                const playerTileYOnlyX = Math.floor(player.y / tileSize);
+            // Normalizar diagonal
+            if (moveX !== 0 || moveY !== 0) {
+                const length = Math.sqrt(moveX * moveX + moveY * moveY);
+                moveX = (moveX / length) * player.speed;
+                moveY = (moveY / length) * player.speed;
                 
-                if (
-                    playerTileXOnlyX >= 0 && playerTileXOnlyX < mazeSize &&
-                    playerTileYOnlyX >= 0 && playerTileYOnlyX < mazeSize &&
-                    maze[playerTileYOnlyX][playerTileXOnlyX] === 0
-                ) {
-                    player.x += moveX;
-                }
+                const newX = player.x + moveX;
+                const newY = player.y + moveY;
                 
-                // Intentar mover solo en Y
-                const playerTileXOnlyY = Math.floor(player.x / tileSize);
-                const playerTileYOnlyY = Math.floor((player.y + moveY) / tileSize);
+                // Colisión con paredes
+                const tileX = Math.floor(newX / tileSize);
+                const tileY = Math.floor(newY / tileSize);
                 
-                if (
-                    playerTileXOnlyY >= 0 && playerTileXOnlyY < mazeSize &&
-                    playerTileYOnlyY >= 0 && playerTileYOnlyY < mazeSize &&
-                    maze[playerTileYOnlyY][playerTileXOnlyY] === 0
-                ) {
-                    player.y += moveY;
+                if (tileX >= 0 && tileX < mazeSize && tileY >= 0 && tileY < mazeSize) {
+                    if (maze[tileY][tileX] === 0) {
+                        player.x = newX;
+                        player.y = newY;
+                    }
                 }
             }
-            
-            // Mantener al jugador dentro de los límites del canvas
-            player.x = Math.max(player.size/2, Math.min(player.x, canvas.width - player.size/2));
-            player.y = Math.max(player.size/2, Math.min(player.y, canvas.height - player.size/2));
-            
-            // Reclutar ciudadanos (tecla espacio)
-            if (keys[' ']) {
-                processRecruitment();
-                keys[' '] = false; // Reiniciar para que no se mantenga presionado
-            }
-            
-            // Actualizar posición de seguidores
+
+            // Mantener en canvas
+            player.x = Math.max(tileSize/2, Math.min(player.x, canvas.width - tileSize/2));
+            player.y = Math.max(tileSize/2, Math.min(player.y, canvas.height - tileSize/2));
+
+            // Actualizar seguidores
             for (let i = 0; i < followers.length; i++) {
                 const follower = followers[i];
                 const target = i === 0 ? player : followers[i-1];
                 
-                // Calcular distancia al objetivo
                 const dx = target.x - follower.x;
                 const dy = target.y - follower.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
+                const dist = Math.hypot(dx, dy);
                 
-                // Si está demasiado lejos, acercarse
-                const followDistance = tileSize * 0.8;
-                if (distance > followDistance) {
-                    follower.x += (dx / distance) * player.speed * 0.6;
-                    follower.y += (dy / distance) * player.speed * 0.6;
+                if (dist > 25) {
+                    follower.x += (dx / dist) * player.speed * 0.8;
+                    follower.y += (dy / dist) * player.speed * 0.8;
                 }
-                
-                // Mantener seguidores dentro de los límites del canvas
-                follower.x = Math.max(follower.size/2, Math.min(follower.x, canvas.width - follower.size/2));
-                follower.y = Math.max(follower.size/2, Math.min(follower.y, canvas.height - follower.size/2));
             }
-            
+
             // Actualizar enemigos
-            for (let i = 0; i < enemies.length; i++) {
-                const enemy = enemies[i];
-                
-                // Cambiar dirección aleatoriamente
-                enemy.directionChange++;
-                if (enemy.directionChange > 60 || Math.random() < 0.05) {
-                    enemy.direction = Math.random() * Math.PI * 2;
-                    enemy.directionChange = 0;
+            for (let enemy of enemies) {
+                // Movimiento aleatorio
+                if (Math.random() < 0.02) {
+                    const angle = Math.random() * Math.PI * 2;
+                    enemy.dx = Math.cos(angle) * enemy.speed;
+                    enemy.dy = Math.sin(angle) * enemy.speed;
                 }
                 
-                // Movimiento
-                enemy.x += Math.cos(enemy.direction) * enemy.speed;
-                enemy.y += Math.sin(enemy.direction) * enemy.speed;
+                const newX = enemy.x + enemy.dx;
+                const newY = enemy.y + enemy.dy;
+                const tileX = Math.floor(newX / tileSize);
+                const tileY = Math.floor(newY / tileSize);
                 
-                // Verificar colisiones con paredes
-                const enemyTileX = Math.floor(enemy.x / tileSize);
-                const enemyTileY = Math.floor(enemy.y / tileSize);
-                
-                if (
-                    enemyTileX < 0 || enemyTileX >= mazeSize ||
-                    enemyTileY < 0 || enemyTileY >= mazeSize ||
-                    maze[enemyTileY][enemyTileX] === 1
-                ) {
-                    // Rebote
-                    enemy.direction += Math.PI;
-                    enemy.x -= Math.cos(enemy.direction) * enemy.speed * 2;
-                    enemy.y -= Math.sin(enemy.direction) * enemy.speed * 2;
+                if (tileX >= 0 && tileX < mazeSize && tileY >= 0 && tileY < mazeSize && maze[tileY][tileX] === 0) {
+                    enemy.x = newX;
+                    enemy.y = newY;
+                } else {
+                    enemy.dx = -enemy.dx;
+                    enemy.dy = -enemy.dy;
                 }
                 
-                // Mantener enemigos dentro de los límites del canvas
-                enemy.x = Math.max(enemy.size/2, Math.min(enemy.x, canvas.width - enemy.size/2));
-                enemy.y = Math.max(enemy.size/2, Math.min(enemy.y, canvas.height - enemy.size/2));
-                
-                // Verificar colisión con el jugador
-                const distToPlayer = Math.sqrt(
-                    Math.pow(player.x - enemy.x, 2) + 
-                    Math.pow(player.y - enemy.y, 2)
-                );
-                
-                if (distToPlayer < player.size/2 + enemy.size/2) {
-                    // El jugador pierde seguidores
+                // Colisión con jugador
+                if (Math.hypot(player.x - enemy.x, player.y - enemy.y) < player.size/2 + enemy.size/2) {
                     if (followers.length > 0) {
-                        const lostCount = Math.min(2, followers.length);
-                        followers.splice(-lostCount, lostCount);
-                        followerCountElement.textContent = followers.length;
+                        followers.pop();
+                        followerSpan.textContent = followers.length;
                     } else {
-                        // Game over si no tiene seguidores
                         gameOver();
                     }
                 }
-                
-                // Verificar colisión con seguidores (solo si no hay power-up de protección)
-                if (!powerUpActive || powerUpType !== 'protection') {
-                    for (let j = followers.length - 1; j >= 0; j--) {
-                        const follower = followers[j];
-                        const distToFollower = Math.sqrt(
-                            Math.pow(follower.x - enemy.x, 2) + 
-                            Math.pow(follower.y - enemy.y, 2)
-                        );
-                        
-                        if (distToFollower < follower.size/2 + enemy.size/2) {
-                            // El seguidor es dispersado
-                            followers.splice(j, 1);
-                            followerCountElement.textContent = followers.length;
-                        }
-                    }
-                }
             }
-            
-            // Verificar colisión con el jefe
+
+            // Combate con jefe
             if (boss) {
-                const distToBoss = Math.sqrt(
-                    Math.pow(player.x - boss.x, 2) + 
-                    Math.pow(player.y - boss.y, 2)
-                );
+                const distToBoss = Math.hypot(player.x - boss.x, player.y - boss.y);
                 
-                if (distToBoss < tileSize * 2.5) {
-                    // Mostrar advertencia de jefe
-                    bossWarning.style.display = 'block';
-                    
-                    // Verificar si el jugador tiene suficientes seguidores
+                if (distToBoss < 60) {
                     if (followers.length >= bossRequiredFollowers) {
-                        // Derrotar al jefe
-                        boss.health -= followers.length * 0.1; // Daño progresivo
+                        boss.health -= 0.5;
                         
                         if (boss.health <= 0) {
                             victory();
                         }
                     }
-                } else {
-                    bossWarning.style.display = 'none';
                 }
             }
-            
-            // Actualizar power-up
+
+            // Power-up timer
             if (powerUpActive) {
                 powerUpTimer--;
-                
                 if (powerUpTimer <= 0) {
                     powerUpActive = false;
-                    
-                    // Restaurar velocidad normal si era power-up de velocidad
+                    powerUpSpan.textContent = '-';
                     if (powerUpType === 'speed') {
-                        player.speed = 3; // Volver a velocidad normal
+                        player.speed = 2.5;
                     }
                 }
             }
         }
-        
-        // Dibujar en el canvas
+
+        // ========== DIBUJADO ==========
         function draw() {
-            if (!gameRunning) return;
-            
             // Limpiar canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Calcular desplazamiento para centrar al jugador si es necesario
-            let offsetX = 0;
-            let offsetY = 0;
-            
-            // Solo aplicar desplazamiento en pantallas grandes
-            if (canvas.width > 500 && canvas.height > 500) {
-                offsetX = canvas.width/2 - player.x;
-                offsetY = canvas.height/2 - player.y;
-                
-                // Limitar desplazamiento para no mostrar áreas fuera del laberinto
-                const maxOffsetX = canvas.width - mazeSize * tileSize;
-                const maxOffsetY = canvas.height - mazeSize * tileSize;
-                
-                offsetX = Math.max(maxOffsetX, Math.min(0, offsetX));
-                offsetY = Math.max(maxOffsetY, Math.min(0, offsetY));
-            }
             
             // Dibujar laberinto
             for (let y = 0; y < mazeSize; y++) {
                 for (let x = 0; x < mazeSize; x++) {
-                    const drawX = x * tileSize + offsetX;
-                    const drawY = y * tileSize + offsetY;
-                    
-                    if (drawX + tileSize < 0 || drawX > canvas.width || 
-                        drawY + tileSize < 0 || drawY > canvas.height) {
-                        continue; // No dibujar tiles fuera de pantalla
-                    }
-                    
                     if (maze[y][x] === 1) {
                         ctx.fillStyle = '#0f3460';
-                        ctx.fillRect(drawX, drawY, tileSize, tileSize);
-                        
-                        // Patrón de ladrillos
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize - 2, tileSize - 2);
                         ctx.strokeStyle = '#162447';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(drawX, drawY, tileSize, tileSize);
-                    } else {
-                        ctx.fillStyle = '#1a1a2e';
-                        ctx.fillRect(drawX, drawY, tileSize, tileSize);
+                        ctx.strokeRect(x * tileSize, y * tileSize, tileSize - 2, tileSize - 2);
                     }
                 }
             }
-            
+
             // Dibujar ciudadanos
-            for (const citizen of citizens) {
-                const drawX = citizen.x + offsetX;
-                const drawY = citizen.y + offsetY;
-                
-                // Solo dibujar si está en pantalla
-                if (drawX < -citizen.size || drawX > canvas.width + citizen.size ||
-                    drawY < -citizen.size || drawY > canvas.height + citizen.size) {
-                    continue;
-                }
-                
-                ctx.fillStyle = citizen.color;
+            ctx.fillStyle = '#78e08f';
+            for (let citizen of citizens) {
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, citizen.size/2, 0, Math.PI * 2);
+                ctx.arc(citizen.x, citizen.y, citizen.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                
                 // Ojos
                 ctx.fillStyle = 'white';
                 ctx.beginPath();
-                ctx.arc(drawX - 3, drawY - 3, 2, 0, Math.PI * 2);
-                ctx.arc(drawX + 3, drawY - 3, 2, 0, Math.PI * 2);
+                ctx.arc(citizen.x - 3, citizen.y - 3, 2, 0, Math.PI * 2);
+                ctx.arc(citizen.x + 3, citizen.y - 3, 2, 0, Math.PI * 2);
                 ctx.fill();
-                
-                // Boca (sonrisa)
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, 4, 0.2, Math.PI - 0.2);
-                ctx.stroke();
+                ctx.fillStyle = '#78e08f';
             }
-            
+
             // Dibujar enemigos
-            for (const enemy of enemies) {
-                const drawX = enemy.x + offsetX;
-                const drawY = enemy.y + offsetY;
-                
-                // Solo dibujar si está en pantalla
-                if (drawX < -enemy.size || drawX > canvas.width + enemy.size ||
-                    drawY < -enemy.size || drawY > canvas.height + enemy.size) {
-                    continue;
-                }
-                
+            for (let enemy of enemies) {
                 ctx.fillStyle = enemy.color;
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, enemy.size/2, 0, Math.PI * 2);
+                ctx.arc(enemy.x, enemy.y, enemy.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                
-                // Ojos enojados
+                // Ojos
                 ctx.fillStyle = 'white';
                 ctx.beginPath();
-                ctx.arc(drawX - 4, drawY - 4, 3, 0, Math.PI * 2);
-                ctx.arc(drawX + 4, drawY - 4, 3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Boca enfadada
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(drawX, drawY + 3, 3, 0.2, Math.PI - 0.2, true);
-                ctx.stroke();
-                
-                // Cuernos
-                ctx.fillStyle = enemy.color;
-                ctx.beginPath();
-                ctx.moveTo(drawX - 6, drawY - 8);
-                ctx.lineTo(drawX - 10, drawY - 15);
-                ctx.lineTo(drawX - 2, drawY - 10);
-                ctx.fill();
-                
-                ctx.beginPath();
-                ctx.moveTo(drawX + 6, drawY - 8);
-                ctx.lineTo(drawX + 10, drawY - 15);
-                ctx.lineTo(drawX + 2, drawY - 10);
+                ctx.arc(enemy.x - 4, enemy.y - 4, 3, 0, Math.PI * 2);
+                ctx.arc(enemy.x + 4, enemy.y - 4, 3, 0, Math.PI * 2);
                 ctx.fill();
             }
-            
+
             // Dibujar seguidores
-            for (const follower of followers) {
-                const drawX = follower.x + offsetX;
-                const drawY = follower.y + offsetY;
-                
-                // Solo dibujar si está en pantalla
-                if (drawX < -10 || drawX > canvas.width + 10 ||
-                    drawY < -10 || drawY > canvas.height + 10) {
-                    continue;
-                }
-                
+            for (let follower of followers) {
                 ctx.fillStyle = follower.color;
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, follower.size || tileSize * 0.25, 0, Math.PI * 2);
+                ctx.arc(follower.x, follower.y, follower.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                
-                // Bandera de revolución
+                // Bandera
                 ctx.fillStyle = '#e55039';
-                ctx.fillRect(drawX + 5, drawY - 10, 8, 15);
-                
+                ctx.fillRect(follower.x + 5, follower.y - 10, 6, 12);
                 ctx.fillStyle = '#f6b93b';
                 ctx.beginPath();
-                ctx.moveTo(drawX + 13, drawY - 10);
-                ctx.lineTo(drawX + 13, drawY + 5);
-                ctx.lineTo(drawX + 20, drawY - 2.5);
+                ctx.moveTo(follower.x + 11, follower.y - 10);
+                ctx.lineTo(follower.x + 11, follower.y + 2);
+                ctx.lineTo(follower.x + 16, follower.y - 4);
                 ctx.closePath();
                 ctx.fill();
             }
-            
+
             // Dibujar jefe
             if (boss) {
-                const drawX = boss.x + offsetX;
-                const drawY = boss.y + offsetY;
+                ctx.fillStyle = boss.color;
+                ctx.beginPath();
+                ctx.arc(boss.x, boss.y, boss.size/2, 0, Math.PI * 2);
+                ctx.fill();
                 
-                // Solo dibujar si está en pantalla
-                if (drawX < -boss.size || drawX > canvas.width + boss.size ||
-                    drawY < -boss.size || drawY > canvas.height + boss.size) {
-                    // Dibujar indicador de dirección si el jefe está fuera de pantalla
-                    if (boss.x < player.x || boss.x > player.x || boss.y < player.y || boss.y > player.y) {
-                        // Calcular ángulo hacia el jefe
-                        const angle = Math.atan2(boss.y - player.y, boss.x - player.x);
-                        const indicatorX = canvas.width/2 + Math.cos(angle) * (Math.min(canvas.width, canvas.height)/2 - 30);
-                        const indicatorY = canvas.height/2 + Math.sin(angle) * (Math.min(canvas.width, canvas.height)/2 - 30);
-                        
-                        ctx.fillStyle = 'rgba(142, 68, 173, 0.7)';
-                        ctx.beginPath();
-                        ctx.arc(indicatorX, indicatorY, 15, 0, Math.PI * 2);
-                        ctx.fill();
-                        
-                        ctx.fillStyle = 'white';
-                        ctx.font = '10px "Press Start 2P"';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText('JEFE', indicatorX, indicatorY);
-                    }
-                    // No dibujar el jefe si está fuera de pantalla
-                } else {
-                    ctx.fillStyle = boss.color;
-                    ctx.beginPath();
-                    ctx.arc(drawX, drawY, boss.size/2, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // Corona opresora
-                    ctx.fillStyle = '#f6b93b';
-                    ctx.beginPath();
-                    ctx.moveTo(drawX - 20, drawY - 15);
-                    ctx.lineTo(drawX - 10, drawY - 30);
-                    ctx.lineTo(drawX, drawY - 15);
-                    ctx.lineTo(drawX + 10, drawY - 30);
-                    ctx.lineTo(drawX + 20, drawY - 15);
-                    ctx.lineTo(drawX + 20, drawY - 5);
-                    ctx.lineTo(drawX - 20, drawY - 5);
-                    ctx.closePath();
-                    ctx.fill();
-                    
-                    // Ojos malvados
-                    ctx.fillStyle = 'white';
-                    ctx.beginPath();
-                    ctx.arc(drawX - 10, drawY - 5, 6, 0, Math.PI * 2);
-                    ctx.arc(drawX + 10, drawY - 5, 6, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    ctx.fillStyle = 'black';
-                    ctx.beginPath();
-                    ctx.arc(drawX - 10, drawY - 5, 3, 0, Math.PI * 2);
-                    ctx.arc(drawX + 10, drawY - 5, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // Boca
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(drawX, drawY + 10, 8, 0.2, Math.PI - 0.2);
-                    ctx.stroke();
-                    
-                    // Barra de salud
-                    const healthWidth = 100;
-                    const healthHeight = 10;
-                    const healthX = drawX - healthWidth/2;
-                    const healthY = drawY - boss.size/2 - 20;
-                    
-                    // Fondo de la barra
-                    ctx.fillStyle = '#333';
-                    ctx.fillRect(healthX, healthY, healthWidth, healthHeight);
-                    
-                    // Salud actual
-                    const healthPercent = boss.health / boss.maxHealth;
-                    ctx.fillStyle = healthPercent > 0.5 ? '#78e08f' : healthPercent > 0.25 ? '#f6b93b' : '#e55039';
-                    ctx.fillRect(healthX, healthY, healthWidth * healthPercent, healthHeight);
-                    
-                    // Borde
-                    ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(healthX, healthY, healthWidth, healthHeight);
-                    
-                    // Texto de salud
-                    ctx.fillStyle = '#fff';
-                    ctx.font = '10px "Press Start 2P"';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(`OPRESOR: ${Math.ceil(boss.health)}/${boss.maxHealth}`, drawX, healthY - 5);
-                }
+                // Corona
+                ctx.fillStyle = '#f6b93b';
+                ctx.beginPath();
+                ctx.moveTo(boss.x - 20, boss.y - 20);
+                ctx.lineTo(boss.x - 10, boss.y - 35);
+                ctx.lineTo(boss.x, boss.y - 20);
+                ctx.lineTo(boss.x + 10, boss.y - 35);
+                ctx.lineTo(boss.x + 20, boss.y - 20);
+                ctx.fill();
+                
+                // Barra de vida
+                ctx.fillStyle = '#333';
+                ctx.fillRect(boss.x - 50, boss.y - 50, 100, 10);
+                ctx.fillStyle = '#e55039';
+                ctx.fillRect(boss.x - 50, boss.y - 50, 100 * (boss.health / boss.maxHealth), 10);
             }
-            
-            // Dibujar jugador (siempre centrado cuando hay desplazamiento)
-            const playerDrawX = offsetX !== 0 ? canvas.width/2 : player.x;
-            const playerDrawY = offsetY !== 0 ? canvas.height/2 : player.y;
-            
+
+            // Dibujar jugador
             ctx.fillStyle = player.color;
             ctx.beginPath();
-            ctx.arc(playerDrawX, playerDrawY, player.size/2, 0, Math.PI * 2);
+            ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Detalles del jugador
+            // Ojos
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(playerDrawX - 4, playerDrawY - 4, 3, 0, Math.PI * 2);
-            ctx.arc(playerDrawX + 4, playerDrawY - 4, 3, 0, Math.PI * 2);
+            ctx.arc(player.x - 4, player.y - 4, 3, 0, Math.PI * 2);
+            ctx.arc(player.x + 4, player.y - 4, 3, 0, Math.PI * 2);
             ctx.fill();
             
-            // Bandera de líder
+            // Bandera líder
             ctx.fillStyle = '#e55039';
-            ctx.fillRect(playerDrawX + 8, playerDrawY - 12, 10, 20);
-            
+            ctx.fillRect(player.x + 8, player.y - 12, 8, 16);
             ctx.fillStyle = '#f6b93b';
             ctx.beginPath();
-            ctx.moveTo(playerDrawX + 18, playerDrawY - 12);
-            ctx.lineTo(playerDrawX + 18, playerDrawY + 8);
-            ctx.lineTo(playerDrawX + 28, playerDrawY - 2);
+            ctx.moveTo(player.x + 16, player.y - 12);
+            ctx.lineTo(player.x + 16, player.y + 4);
+            ctx.lineTo(player.x + 24, player.y - 4);
             ctx.closePath();
             ctx.fill();
             
-            // Indicador de power-up activo
+            // Power-up effect
             if (powerUpActive) {
                 ctx.strokeStyle = powerUpType === 'speed' ? '#78e08f' : 
-                                  powerUpType === 'protection' ? '#4a69bd' : 
-                                  '#f6b93b';
+                                 powerUpType === 'protection' ? '#4a69bd' : '#f6b93b';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.arc(playerDrawX, playerDrawY, player.size/2 + 5, 0, Math.PI * 2);
+                ctx.arc(player.x, player.y, player.size/2 + 5, 0, Math.PI * 2);
                 ctx.stroke();
-                
-                // Mostrar tiempo restante
-                const secondsLeft = Math.ceil(powerUpTimer / 60);
-                ctx.fillStyle = '#fff';
-                ctx.font = '8px "Press Start 2P"';
-                ctx.textAlign = 'center';
-                ctx.fillText(`${secondsLeft}s`, playerDrawX, playerDrawY + 25);
             }
         }
-        
-        // Game over
+
+        // ========== ESTADOS DEL JUEGO ==========
         function gameOver() {
             gameRunning = false;
-            gameOverText.textContent = "El sistema opresor ha vencido... por ahora.";
-            followersLost.textContent = `Lograste reunir ${followers.length} seguidores, pero necesitabas ${bossRequiredFollowers}.`;
-            gameOverScreen.classList.remove('hidden');
+            document.getElementById('gameOverText').innerHTML = 
+                `Reuniste ${followers.length} seguidores.<br>Necesitabas ${bossRequiredFollowers}.`;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
         }
-        
-        // Victoria
+
         function victory() {
             gameRunning = false;
-            winText.textContent = "¡El pueblo unido ha derrotado al opresor!";
-            followersUsed.textContent = `Usaste ${followers.length} seguidores para derrotar al jefe que requería ${bossRequiredFollowers}.`;
-            winScreen.classList.remove('hidden');
+            document.getElementById('winText').innerHTML = 
+                `¡Derrotaste al opresor con ${followers.length} seguidores!`;
+            document.getElementById('winScreen').classList.remove('hidden');
         }
-        
-        // Bucle del juego
+
+        // ========== INICIALIZACIÓN ==========
+        function initialize() {
+            setupControls();
+            
+            // Botones
+            document.getElementById('startBtn').addEventListener('click', () => {
+                document.getElementById('startScreen').classList.add('hidden');
+                initGame();
+            });
+            
+            document.getElementById('restartBtn').addEventListener('click', () => {
+                document.getElementById('gameOverScreen').classList.add('hidden');
+                initGame();
+            });
+            
+            document.getElementById('playAgainBtn').addEventListener('click', () => {
+                document.getElementById('winScreen').classList.add('hidden');
+                initGame();
+            });
+            
+            // Botón power-up para PC
+            document.getElementById('screenshotBtn').addEventListener('click', activatePowerUp);
+            document.getElementById('recruitBtn').addEventListener('click', recruitCitizens);
+        }
+
+        // Game loop
         function gameLoop() {
-            update();
-            draw();
+            if (gameRunning) {
+                update();
+                draw();
+            }
             requestAnimationFrame(gameLoop);
         }
-        
-        // Inicializar al cargar la página
-        window.addEventListener('load', () => {
-            // Configurar controles táctiles si es necesario
-            setupJoystick();
-            
-            // Ajustar tamaño inicial del canvas
-            resizeCanvas();
-            
-            // Iniciar bucle del juego
-            gameLoop();
-        });
-        
-        // Redimensionar canvas cuando cambie el tamaño de la ventana
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-        });
-        
-        // Prevenir el comportamiento predeterminado de gestos táctiles
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-        
-        // Prevenir el zoom con dos dedos
-        document.addEventListener('touchmove', function(e) {
-            if (e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+
+        // Arrancar
+        initialize();
+        gameLoop();
     </script>
 </body>
 </html>
