@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Revolución Colectiva - MOVIMIENTO FLUIDO</title>
+    <title>Revolución Colectiva - LABERINTO ADAPTATIVO</title>
     <style>
         * {
             margin: 0;
@@ -38,7 +38,7 @@
         }
 
         .game-wrapper {
-            max-width: 800px;
+            max-width: min(800px, 95vw);
             width: 100%;
             background: #1e3799;
             border-radius: 10px;
@@ -65,19 +65,20 @@
             justify-content: space-between;
             margin-top: 10px;
             color: white;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             background: rgba(0,0,0,0.7);
             padding: 10px;
             border-radius: 5px;
             border: 1px solid #f6b93b;
             position: relative;
             z-index: 2;
+            flex-wrap: wrap;
         }
 
         .controls-info {
             margin-top: 10px;
             color: #f6b93b;
-            font-size: 12px;
+            font-size: clamp(10px, 2.5vw, 12px);
             text-align: center;
             background: rgba(0,0,0,0.7);
             padding: 10px;
@@ -98,7 +99,7 @@
         .touch-btn {
             flex: 1;
             padding: 15px;
-            font-size: 16px;
+            font-size: clamp(14px, 4vw, 16px);
             background: #e55039;
             color: white;
             border: none;
@@ -114,14 +115,14 @@
             transform: translateY(4px);
         }
 
-        /* JOYSTICK REVISADO - MOVIMIENTO FLUIDO */
+        /* JOYSTICK RESPONSIVE */
         .touch-joystick-area {
             display: none;
             position: relative;
-            width: 140px;
-            height: 140px;
+            width: min(140px, 30vw);
+            height: min(140px, 30vw);
             background: rgba(0, 0, 0, 0.5);
-            border-radius: 70px;
+            border-radius: 50%;
             margin: 10px auto;
             border: 2px solid rgba(246, 185, 59, 0.8);
             box-shadow: 0 0 20px rgba(246, 185, 59, 0.4);
@@ -132,7 +133,7 @@
         .joystick-base {
             width: 100%;
             height: 100%;
-            border-radius: 70px;
+            border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: center;
@@ -141,19 +142,22 @@
         }
 
         .joystick-handle {
-            width: 60px;
-            height: 60px;
+            width: min(60px, 13vw);
+            height: min(60px, 13vw);
             background: radial-gradient(circle at 30% 30%, #6a89cc, #4a69bd);
-            border-radius: 30px;
+            border-radius: 50%;
             position: absolute;
-            left: 40px;
-            top: 40px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             box-shadow: 0 0 15px rgba(74, 105, 189, 0.8), 0 4px 0 #1e3799;
             border: 2px solid #f6b93b;
-            transition: none; /* SIN TRANSICIÓN - respuesta instantánea */
+            transition: none;
             will-change: transform, left, top;
             touch-action: none;
             pointer-events: none;
+            margin-left: 0;
+            margin-top: 0;
         }
 
         .joystick-handle.active {
@@ -195,7 +199,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(26, 26, 46, 0.95);
-            padding: 30px;
+            padding: clamp(20px, 5vw, 30px);
             border-radius: 10px;
             text-align: center;
             color: white;
@@ -209,14 +213,18 @@
             display: none;
         }
 
+        .screen h1 {
+            font-size: clamp(20px, 6vw, 28px);
+        }
+
         .btn {
             background: #e55039;
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: clamp(12px, 3vw, 15px) clamp(24px, 6vw, 30px);
             margin: 10px;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: clamp(14px, 4vw, 16px);
             cursor: pointer;
             border-bottom: 4px solid #b33939;
             transition: all 0.05s;
@@ -250,16 +258,17 @@
 </head>
 <body>
     <div class="game-wrapper">
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
+        <canvas id="gameCanvas"></canvas>
         
         <div class="glitch-overlay" id="glitchOverlay"></div>
         
         <div class="hud">
             <div>👥 SEGUIDORES: <span id="followerCount">0</span> / <span id="requiredFollowers">5</span></div>
             <div>⚡ POWER: <span id="powerUpStatus">-</span></div>
+            <div>🗺️ LABERINTO: <span id="mazeSizeDisplay">8x8</span></div>
         </div>
 
-        <!-- CONTROLES TÁCTILES REVISADOS -->
+        <!-- CONTROLES TÁCTILES -->
         <div class="touch-controls">
             <div class="touch-joystick-area" id="joystickArea">
                 <div class="joystick-base">
@@ -274,24 +283,24 @@
 
         <div class="controls-info keyboard-only">
             <p>🎮 WASD / FLECHAS = MOVER | ESPACIO = RECLUTAR | C = POWER-UP</p>
-            <p style="color: #78e08f; margin-top: 5px;">¡EL PUEBLO UNO JAMÁS SERÁ VENCIDO!</p>
+            <p style="color: #78e08f; margin-top: 5px;">¡EL PUEBLO UNIDO JAMÁS SERÁ VENCIDO!</p>
         </div>
 
         <div id="startScreen" class="screen">
-            <h1 style="color: #f6b93b; font-size: 28px; text-shadow: 3px 3px 0 #e55039;">REVOLUCIÓN</h1>
-            <h1 style="color: #f6b93b; font-size: 28px; margin-top: -10px; text-shadow: 3px 3px 0 #e55039;">COLECTIVA</h1>
+            <h1 style="color: #f6b93b; text-shadow: 3px 3px 0 #e55039;">REVOLUCIÓN</h1>
+            <h1 style="color: #f6b93b; margin-top: -10px; text-shadow: 3px 3px 0 #e55039;">COLECTIVA</h1>
             <p style="margin: 20px 0; line-height: 1.6;">✊ Recluta seguidores ✊<br>💪 Derrota al sistema opresor 💪</p>
             <button class="btn" id="startBtn">COMENZAR REVOLUCIÓN</button>
         </div>
 
         <div id="gameOverScreen" class="screen hidden">
-            <h1 style="color: #e55039; font-size: 24px;">✖ DERROTADO ✖</h1>
+            <h1 style="color: #e55039;">✖ DERROTADO ✖</h1>
             <p id="gameOverText" style="margin: 20px 0; line-height: 1.6;"></p>
             <button class="btn" id="restartBtn">REINTENTAR</button>
         </div>
 
         <div id="winScreen" class="screen hidden">
-            <h1 style="color: #78e08f; font-size: 24px;">¡VICTORIA DEL PUEBLO!</h1>
+            <h1 style="color: #78e08f;">¡VICTORIA DEL PUEBLO!</h1>
             <p id="winText" style="margin: 20px 0; line-height: 1.6;"></p>
             <button class="btn" id="playAgainBtn">NUEVA REVOLUCIÓN</button>
         </div>
@@ -306,6 +315,7 @@
         const followerSpan = document.getElementById('followerCount');
         const requiredSpan = document.getElementById('requiredFollowers');
         const powerUpSpan = document.getElementById('powerUpStatus');
+        const mazeSizeDisplay = document.getElementById('mazeSizeDisplay');
         const glitchOverlay = document.getElementById('glitchOverlay');
 
         // ========== SISTEMA DE GLITCH ==========
@@ -336,12 +346,12 @@
         // ========== VARIABLES DEL JUEGO ==========
         let gameRunning = false;
         
-        // JUGADOR - velocidad ajustada
+        // Jugador
         let player = {
-            x: 100,
-            y: 100,
+            x: 0,
+            y: 0,
             size: 16,
-            speed: 3.8, // Velocidad aumentada para mejor respuesta
+            speed: 3.8,
             color: '#4a69bd'
         };
 
@@ -350,20 +360,11 @@
         let enemies = [];
         let boss = null;
 
-        // LABERINTO - simplificado para mejor colisión
-        let maze = [
-            [1,1,1,1,1,1,1,1],
-            [1,0,0,0,0,0,0,1],
-            [1,0,1,1,1,0,1,1],
-            [1,0,1,0,0,0,0,1],
-            [1,0,0,0,1,1,0,1],
-            [1,1,1,0,1,0,0,1],
-            [1,0,0,0,0,0,0,1],
-            [1,1,1,1,1,1,1,1]
-        ];
-
-        let mazeSize = 8;
-        let tileSize = 60;
+        // LABERINTO ADAPTATIVO - variables dinámicas
+        let maze = [];
+        let mazeSize = 8; // valor inicial, se recalcula
+        let tileSize = 60; // valor inicial, se recalcula
+        let mazeGenerated = false;
 
         let bossRequiredFollowers = 5;
         let powerUpActive = false;
@@ -377,7 +378,7 @@
             space: false
         };
 
-        // ========== JOYSTICK REVISADO - MOVIMIENTO FLUIDO ==========
+        // JOYSTICK
         let joystick = {
             active: false,
             x: 0,
@@ -386,17 +387,215 @@
             rawY: 0
         };
 
+        // ========== GENERADOR DE LABERINTO ADAPTATIVO ==========
+        function generateAdaptiveMaze() {
+            // Calcular tamaño óptimo basado en el ancho del canvas
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            
+            // Tamaño de celda ideal - entre 40px y 70px según pantalla
+            tileSize = Math.floor(Math.min(
+                Math.max(canvasWidth / 12, 40),
+                Math.min(canvasHeight / 12, 70)
+            ));
+            
+            // Calcular número de celdas que caben en el canvas
+            let maxCols = Math.floor(canvasWidth / tileSize) - 1;
+            let maxRows = Math.floor(canvasHeight / tileSize) - 1;
+            
+            // Limitar a un rango jugable (mínimo 6, máximo 14)
+            mazeSize = Math.min(Math.max(maxCols, maxRows, 6), 14);
+            
+            // Asegurar que sea impar para mejor generación de laberintos
+            if (mazeSize % 2 === 0) mazeSize++;
+            
+            // Actualizar display
+            mazeSizeDisplay.textContent = `${mazeSize}x${mazeSize}`;
+            
+            // Inicializar laberinto vacío (todo paredes)
+            maze = Array(mazeSize).fill().map(() => Array(mazeSize).fill(1));
+            
+            // === ALGORITMO DE BACKTRACKING PARA LABERINTO PERFECTO ===
+            const stack = [];
+            
+            // Empezar en una celda impar (1,1)
+            const startX = 1;
+            const startY = 1;
+            
+            maze[startY][startX] = 0;
+            stack.push([startX, startY]);
+            
+            const dirs = [[0, -2], [2, 0], [0, 2], [-2, 0]];
+            
+            while (stack.length > 0) {
+                const [x, y] = stack[stack.length - 1];
+                
+                // Mezclar direcciones
+                const shuffled = [...dirs].sort(() => Math.random() - 0.5);
+                let moved = false;
+                
+                for (const [dx, dy] of shuffled) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    
+                    if (nx > 0 && nx < mazeSize - 1 && 
+                        ny > 0 && ny < mazeSize - 1 && 
+                        maze[ny][nx] === 1) {
+                        
+                        // Abrir camino
+                        maze[y + dy/2][x + dx/2] = 0;
+                        maze[ny][nx] = 0;
+                        stack.push([nx, ny]);
+                        moved = true;
+                        break;
+                    }
+                }
+                
+                if (!moved) {
+                    stack.pop();
+                }
+            }
+            
+            // === CREAR ENTRADA Y SALIDA ===
+            
+            // Entrada (esquina superior izquierda)
+            maze[1][0] = 0; // Entrada en el borde
+            
+            // Salida (esquina inferior derecha)
+            maze[mazeSize-2][mazeSize-1] = 0;
+            
+            // Asegurar bordes
+            for (let i = 0; i < mazeSize; i++) {
+                maze[0][i] = 1;
+                maze[mazeSize-1][i] = 1;
+                maze[i][0] = 1;
+                maze[i][mazeSize-1] = 1;
+            }
+            
+            // Conectar entrada con el interior
+            maze[1][1] = 0;
+            
+            // Conectar salida con el interior
+            maze[mazeSize-2][mazeSize-2] = 0;
+            
+            // Posicionar jugador en la entrada
+            player.x = tileSize + tileSize/2;
+            player.y = tileSize + tileSize/2;
+            
+            // Ajustar tamaño del jugador según tileSize
+            player.size = Math.max(12, Math.floor(tileSize * 0.3));
+            
+            mazeGenerated = true;
+            
+            console.log(`Laberinto generado: ${mazeSize}x${mazeSize}, tileSize: ${tileSize}px`);
+        }
+
+        // ========== REDIMENSIONAR CANVAS ==========
+        function resizeCanvas() {
+            const container = document.querySelector('.game-wrapper');
+            const containerWidth = container.clientWidth;
+            
+            // Canvas cuadrado pero responsive
+            canvas.width = Math.min(containerWidth, 800);
+            canvas.height = canvas.width; // Mantener aspecto cuadrado
+            
+            // Si el juego está corriendo, regenerar laberinto
+            if (gameRunning) {
+                generateAdaptiveMaze();
+                
+                // Reposicionar elementos del juego
+                repositionGameElements();
+            }
+        }
+
+        function repositionGameElements() {
+            if (!mazeGenerated) return;
+            
+            // Recolocar jugador en la entrada
+            player.x = tileSize + tileSize/2;
+            player.y = tileSize + tileSize/2;
+            player.size = Math.max(12, Math.floor(tileSize * 0.3));
+            
+            // Limpiar y regenerar ciudadanos, enemigos y jefe
+            citizens = [];
+            enemies = [];
+            
+            // Ciudadanos
+            const numCitizens = Math.floor(mazeSize * 1.5);
+            for (let i = 0; i < numCitizens; i++) {
+                let x, y, attempts = 0;
+                do {
+                    x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    attempts++;
+                    if (attempts > 100) break;
+                } while (maze[y][x] !== 0 || (x === 1 && y === 1) || (x === mazeSize-2 && y === mazeSize-2));
+                
+                if (attempts <= 100) {
+                    citizens.push({
+                        x: x * tileSize + tileSize/2,
+                        y: y * tileSize + tileSize/2,
+                        size: Math.max(10, Math.floor(tileSize * 0.2)),
+                        color: '#78e08f'
+                    });
+                }
+            }
+
+            // Enemigos
+            const numEnemies = Math.floor(mazeSize * 0.6);
+            for (let i = 0; i < numEnemies; i++) {
+                let x, y, attempts = 0;
+                do {
+                    x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
+                    attempts++;
+                    if (attempts > 100) break;
+                } while (maze[y][x] !== 0 || Math.abs(x - 1) + Math.abs(y - 1) < 4);
+                
+                if (attempts <= 100) {
+                    enemies.push({
+                        x: x * tileSize + tileSize/2,
+                        y: y * tileSize + tileSize/2,
+                        size: Math.max(14, Math.floor(tileSize * 0.25)),
+                        color: '#e55039',
+                        speed: 1.0,
+                        dx: (Math.random() - 0.5) * 2,
+                        dy: (Math.random() - 0.5) * 2
+                    });
+                }
+            }
+
+            // Jefe (en la salida)
+            const bossX = mazeSize - 2;
+            const bossY = mazeSize - 2;
+            
+            bossRequiredFollowers = Math.min(8, Math.max(4, Math.floor(mazeSize / 2)));
+            boss = {
+                x: bossX * tileSize + tileSize/2,
+                y: bossY * tileSize + tileSize/2,
+                size: Math.max(32, Math.floor(tileSize * 0.7)),
+                color: '#8e44ad',
+                health: bossRequiredFollowers * 2,
+                maxHealth: bossRequiredFollowers * 2
+            };
+
+            // Actualizar HUD
+            followerSpan.textContent = followers.length;
+            requiredSpan.textContent = bossRequiredFollowers;
+        }
+
+        // ========== SETUP JOYSTICK ==========
         function setupJoystick() {
             const joystickArea = document.getElementById('joystickArea');
             const joystickHandle = document.getElementById('joystickHandle');
             
             if (!joystickArea) return;
 
-            // Posición inicial del handle
-            joystickHandle.style.left = '40px';
-            joystickHandle.style.top = '40px';
+            // Resetear posición
+            joystickHandle.style.left = '50%';
+            joystickHandle.style.top = '50%';
+            joystickHandle.style.transform = 'translate(-50%, -50%)';
 
-            // INICIO del joystick
             joystickArea.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 joystick.active = true;
@@ -410,7 +609,6 @@
                 updateJoystickPosition(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
             });
 
-            // MOVIMIENTO del joystick
             document.addEventListener('touchmove', (e) => {
                 if (!joystick.active) return;
                 e.preventDefault();
@@ -423,7 +621,6 @@
                 updateJoystickPosition(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
             });
 
-            // FIN del joystick
             document.addEventListener('touchend', (e) => {
                 if (!joystick.active) return;
                 e.preventDefault();
@@ -431,13 +628,10 @@
                 joystick.active = false;
                 joystick.x = 0;
                 joystick.y = 0;
-                joystick.rawX = 0;
-                joystick.rawY = 0;
                 joystickHandle.classList.remove('active');
-                
-                // Resetear posición visual INMEDIATAMENTE
-                joystickHandle.style.left = '40px';
-                joystickHandle.style.top = '40px';
+                joystickHandle.style.left = '50%';
+                joystickHandle.style.top = '50%';
+                joystickHandle.style.transform = 'translate(-50%, -50%)';
             });
 
             document.addEventListener('touchcancel', (e) => {
@@ -447,119 +641,30 @@
                 joystick.active = false;
                 joystick.x = 0;
                 joystick.y = 0;
-                joystick.rawX = 0;
-                joystick.rawY = 0;
                 joystickHandle.classList.remove('active');
-                joystickHandle.style.left = '40px';
-                joystickHandle.style.top = '40px';
+                joystickHandle.style.left = '50%';
+                joystickHandle.style.top = '50%';
+                joystickHandle.style.transform = 'translate(-50%, -50%)';
             });
         }
 
         function updateJoystickPosition(touchX, touchY, centerX, centerY, handle) {
-            // Calcular vector desde el centro
             let dx = touchX - centerX;
             let dy = touchY - centerY;
             
-            // Distancia máxima (radio efectivo)
             const maxDistance = 40;
-            
-            // Calcular distancia
             let distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Guardar valores raw (sin normalizar)
-            joystick.rawX = dx;
-            joystick.rawY = dy;
-            
-            // Limitar a la distancia máxima y calcular valores normalizados
             if (distance > maxDistance) {
                 dx = (dx / distance) * maxDistance;
                 dy = (dy / distance) * maxDistance;
-                distance = maxDistance;
             }
             
-            // VALORES NORMALIZADOS (-1 a 1) - CRÍTICO PARA MOVIMIENTO FLUIDO
             joystick.x = dx / maxDistance;
             joystick.y = dy / maxDistance;
             
-            // Actualizar posición visual - USANDO left/top en lugar de transform
-            // Esto es más directo y evita problemas de transform
-            handle.style.left = (40 + dx) + 'px';
-            handle.style.top = (40 + dy) + 'px';
-        }
-
-        // ========== FUNCIONES DEL JUEGO ==========
-        function initGame() {
-            player.x = 100;
-            player.y = 100;
-            player.speed = 3.8;
-
-            followers = [];
-            citizens = [];
-            enemies = [];
-
-            // Ciudadanos
-            const numCitizens = 10 + Math.floor(Math.random() * 6);
-            for (let i = 0; i < numCitizens; i++) {
-                let x, y, attempts = 0;
-                do {
-                    x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    attempts++;
-                    if (attempts > 100) break;
-                } while (maze[y][x] !== 0 || (Math.abs(x - 1) + Math.abs(y - 1) < 2));
-                
-                citizens.push({
-                    x: x * tileSize + tileSize/2,
-                    y: y * tileSize + tileSize/2,
-                    size: 12,
-                    color: '#78e08f'
-                });
-            }
-
-            // Enemigos
-            const numEnemies = 3 + Math.floor(Math.random() * 3);
-            for (let i = 0; i < numEnemies; i++) {
-                let x, y, attempts = 0;
-                do {
-                    x = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    y = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                    attempts++;
-                    if (attempts > 100) break;
-                } while (maze[y][x] !== 0 || Math.abs(x - 1) + Math.abs(y - 1) < 3);
-                
-                enemies.push({
-                    x: x * tileSize + tileSize/2,
-                    y: y * tileSize + tileSize/2,
-                    size: 16,
-                    color: '#e55039',
-                    speed: 1.0,
-                    dx: (Math.random() - 0.5) * 2,
-                    dy: (Math.random() - 0.5) * 2
-                });
-            }
-
-            // Jefe
-            let bossX, bossY;
-            do {
-                bossX = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-                bossY = Math.floor(Math.random() * (mazeSize - 2)) + 1;
-            } while (maze[bossY][bossX] !== 0 || Math.abs(bossX - 1) + Math.abs(bossY - 1) < 6);
-            
-            bossRequiredFollowers = 4 + Math.floor(Math.random() * 4);
-            boss = {
-                x: bossX * tileSize + tileSize/2,
-                y: bossY * tileSize + tileSize/2,
-                size: 40,
-                color: '#8e44ad',
-                health: bossRequiredFollowers * 2,
-                maxHealth: bossRequiredFollowers * 2
-            };
-
-            followerSpan.textContent = followers.length;
-            requiredSpan.textContent = bossRequiredFollowers;
-            powerUpSpan.textContent = '-';
-
-            gameRunning = true;
+            // Usar transform para posicionamiento relativo al centro
+            handle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
         }
 
         // ========== CONTROLES PC ==========
@@ -601,11 +706,11 @@
                 const citizen = citizens[i];
                 const dist = Math.hypot(player.x - citizen.x, player.y - citizen.y);
                 
-                if (dist < 45) {
+                if (dist < tileSize * 0.8) {
                     followers.push({
                         x: citizen.x,
                         y: citizen.y,
-                        size: 12,
+                        size: player.size * 0.8,
                         color: '#f6b93b'
                     });
                     citizens.splice(i, 1);
@@ -640,11 +745,11 @@
                 for (let i = citizens.length - 1; i >= 0; i--) {
                     const citizen = citizens[i];
                     const dist = Math.hypot(player.x - citizen.x, player.y - citizen.y);
-                    if (dist < 100) {
+                    if (dist < tileSize * 1.5) {
                         followers.push({
                             x: citizen.x,
                             y: citizen.y,
-                            size: 12,
+                            size: player.size * 0.8,
                             color: '#f6b93b'
                         });
                         citizens.splice(i, 1);
@@ -654,37 +759,30 @@
             }
         }
 
-        // ========== SISTEMA DE MOVIMIENTO FLUIDO REVISADO ==========
+        // ========== MOVIMIENTO FLUIDO ==========
         function movePlayer() {
             let moveX = 0, moveY = 0;
             
-            // TECLADO - input digital
             if (keys.w || keys.arrowup) moveY -= 1;
             if (keys.s || keys.arrowdown) moveY += 1;
             if (keys.a || keys.arrowleft) moveX -= 1;
             if (keys.d || keys.arrowright) moveX += 1;
             
-            // JOYSTICK - input analógico (ya normalizado entre -1 y 1)
             if (joystick.active) {
                 moveX += joystick.x;
                 moveY += joystick.y;
             }
             
-            // Si hay movimiento
             if (moveX !== 0 || moveY !== 0) {
-                // Normalizar para velocidad constante en diagonal
                 const length = Math.sqrt(moveX * moveX + moveY * moveY);
                 moveX = (moveX / length) * player.speed;
                 moveY = (moveY / length) * player.speed;
-                
-                // MOVIMIENTO POR EJES SEPARADOS - COLISIÓN FLUIDA
                 
                 // Movimiento en X
                 let newX = player.x + moveX;
                 let tileX = Math.floor(newX / tileSize);
                 let tileY = Math.floor(player.y / tileSize);
                 
-                // Verificar colisión en X
                 if (tileX >= 0 && tileX < mazeSize && tileY >= 0 && tileY < mazeSize) {
                     if (maze[tileY][tileX] === 0) {
                         player.x = newX;
@@ -696,7 +794,6 @@
                 tileX = Math.floor(player.x / tileSize);
                 tileY = Math.floor(newY / tileSize);
                 
-                // Verificar colisión en Y
                 if (tileX >= 0 && tileX < mazeSize && tileY >= 0 && tileY < mazeSize) {
                     if (maze[tileY][tileX] === 0) {
                         player.y = newY;
@@ -704,7 +801,7 @@
                 }
             }
             
-            // Limitar al canvas (por si acaso)
+            // Límites del canvas
             player.x = Math.max(tileSize/2, Math.min(player.x, canvas.width - tileSize/2));
             player.y = Math.max(tileSize/2, Math.min(player.y, canvas.height - tileSize/2));
         }
@@ -712,7 +809,6 @@
         function update() {
             if (!gameRunning) return;
 
-            // MOVER JUGADOR - función dedicada
             movePlayer();
 
             // Actualizar seguidores
@@ -776,7 +872,7 @@
             if (boss) {
                 const distToBoss = Math.hypot(player.x - boss.x, player.y - boss.y);
                 
-                if (distToBoss < 70) {
+                if (distToBoss < tileSize * 1.2) {
                     if (followers.length >= bossRequiredFollowers) {
                         boss.health -= 0.8;
                         if (Math.random() < 0.1) triggerGlitch(0.2, 50);
@@ -801,17 +897,25 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Laberinto
+            // Dibujar laberinto
             for (let y = 0; y < mazeSize; y++) {
                 for (let x = 0; x < mazeSize; x++) {
                     if (maze[y][x] === 1) {
                         ctx.fillStyle = '#0f3460';
-                        ctx.fillRect(x * tileSize, y * tileSize, tileSize - 2, tileSize - 2);
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize - 1, tileSize - 1);
                         ctx.strokeStyle = '#162447';
-                        ctx.strokeRect(x * tileSize, y * tileSize, tileSize - 2, tileSize - 2);
+                        ctx.strokeRect(x * tileSize, y * tileSize, tileSize - 1, tileSize - 1);
                     }
                 }
             }
+
+            // Dibujar entrada (verde suave)
+            ctx.fillStyle = 'rgba(120, 224, 143, 0.2)';
+            ctx.fillRect(1 * tileSize, 1 * tileSize, tileSize - 1, tileSize - 1);
+            
+            // Dibujar salida (púrpura suave)
+            ctx.fillStyle = 'rgba(142, 68, 173, 0.2)';
+            ctx.fillRect((mazeSize-2) * tileSize, (mazeSize-2) * tileSize, tileSize - 1, tileSize - 1);
 
             // Ciudadanos
             for (let citizen of citizens) {
@@ -851,12 +955,12 @@
                 ctx.arc(follower.x, follower.y, follower.size/2, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.fillStyle = '#e55039';
-                ctx.fillRect(follower.x + 5, follower.y - 10, 6, 12);
+                ctx.fillRect(follower.x + 4, follower.y - 8, 5, 10);
                 ctx.fillStyle = '#f6b93b';
                 ctx.beginPath();
-                ctx.moveTo(follower.x + 11, follower.y - 10);
-                ctx.lineTo(follower.x + 11, follower.y + 2);
-                ctx.lineTo(follower.x + 16, follower.y - 4);
+                ctx.moveTo(follower.x + 9, follower.y - 8);
+                ctx.lineTo(follower.x + 9, follower.y + 2);
+                ctx.lineTo(follower.x + 13, follower.y - 3);
                 ctx.closePath();
                 ctx.fill();
             }
@@ -870,19 +974,19 @@
                 
                 ctx.fillStyle = '#f6b93b';
                 ctx.beginPath();
-                ctx.moveTo(boss.x - 20, boss.y - 20);
-                ctx.lineTo(boss.x - 10, boss.y - 35);
-                ctx.lineTo(boss.x, boss.y - 20);
-                ctx.lineTo(boss.x + 10, boss.y - 35);
-                ctx.lineTo(boss.x + 20, boss.y - 20);
+                ctx.moveTo(boss.x - 15, boss.y - 15);
+                ctx.lineTo(boss.x - 8, boss.y - 25);
+                ctx.lineTo(boss.x, boss.y - 15);
+                ctx.lineTo(boss.x + 8, boss.y - 25);
+                ctx.lineTo(boss.x + 15, boss.y - 15);
                 ctx.fill();
                 
                 ctx.fillStyle = '#333';
-                ctx.fillRect(boss.x - 50, boss.y - 50, 100, 10);
+                ctx.fillRect(boss.x - 40, boss.y - 40, 80, 8);
                 ctx.fillStyle = '#e55039';
-                ctx.fillRect(boss.x - 50, boss.y - 50, 100 * (boss.health / boss.maxHealth), 10);
+                ctx.fillRect(boss.x - 40, boss.y - 40, 80 * (boss.health / boss.maxHealth), 8);
                 ctx.strokeStyle = '#fff';
-                ctx.strokeRect(boss.x - 50, boss.y - 50, 100, 10);
+                ctx.strokeRect(boss.x - 40, boss.y - 40, 80, 8);
             }
 
             // Jugador
@@ -893,22 +997,22 @@
             
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(player.x - 4, player.y - 4, 3, 0, Math.PI * 2);
-            ctx.arc(player.x + 4, player.y - 4, 3, 0, Math.PI * 2);
+            ctx.arc(player.x - 3, player.y - 3, 2.5, 0, Math.PI * 2);
+            ctx.arc(player.x + 3, player.y - 3, 2.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = '#0c2461';
             ctx.beginPath();
-            ctx.arc(player.x - 5, player.y - 5, 1.5, 0, Math.PI * 2);
-            ctx.arc(player.x + 3, player.y - 5, 1.5, 0, Math.PI * 2);
+            ctx.arc(player.x - 4, player.y - 4, 1.5, 0, Math.PI * 2);
+            ctx.arc(player.x + 2, player.y - 4, 1.5, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.fillStyle = '#e55039';
-            ctx.fillRect(player.x + 8, player.y - 12, 8, 16);
+            ctx.fillRect(player.x + 6, player.y - 10, 6, 14);
             ctx.fillStyle = '#f6b93b';
             ctx.beginPath();
-            ctx.moveTo(player.x + 16, player.y - 12);
-            ctx.lineTo(player.x + 16, player.y + 4);
-            ctx.lineTo(player.x + 24, player.y - 4);
+            ctx.moveTo(player.x + 12, player.y - 10);
+            ctx.lineTo(player.x + 12, player.y + 4);
+            ctx.lineTo(player.x + 18, player.y - 3);
             ctx.closePath();
             ctx.fill();
             
@@ -920,9 +1024,9 @@
                 ctx.arc(player.x, player.y, player.size/2 + 5, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 12px "Courier New", monospace';
+                ctx.font = `bold ${Math.max(10, tileSize/6)}px "Courier New", monospace`;
                 ctx.textAlign = 'center';
-                ctx.fillText(`${Math.ceil(powerUpTimer / 60)}s`, player.x, player.y + 30);
+                ctx.fillText(`${Math.ceil(powerUpTimer / 60)}s`, player.x, player.y + player.size + 15);
             }
         }
 
@@ -944,23 +1048,42 @@
             document.getElementById('winScreen').classList.remove('hidden');
         }
 
+        function initGame() {
+            followers = [];
+            powerUpActive = false;
+            powerUpTimer = 0;
+            powerUpSpan.textContent = '-';
+            
+            generateAdaptiveMaze();
+            repositionGameElements();
+            
+            gameRunning = true;
+        }
+
         // ========== INICIALIZACIÓN ==========
         function initialize() {
             setupKeyboardControls();
             setupJoystick();
             
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+            
             document.getElementById('startBtn').addEventListener('click', () => {
                 document.getElementById('startScreen').classList.add('hidden');
+                resizeCanvas();
                 initGame();
             });
             
             document.getElementById('restartBtn').addEventListener('click', () => {
                 document.getElementById('gameOverScreen').classList.add('hidden');
+                resizeCanvas();
                 initGame();
             });
             
             document.getElementById('playAgainBtn').addEventListener('click', () => {
                 document.getElementById('winScreen').classList.add('hidden');
+                resizeCanvas();
                 initGame();
             });
             
@@ -975,6 +1098,9 @@
                 e.preventDefault();
                 activatePowerUp();
             });
+            
+            // Generar vista previa del laberinto en la pantalla de inicio
+            resizeCanvas();
         }
 
         function gameLoop() {
