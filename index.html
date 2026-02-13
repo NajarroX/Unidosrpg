@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Revolución Colectiva - GLITCH</title>
+    <title>Revolución Colectiva - MOVIMIENTO FLUIDO</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,6 @@
             position: relative;
         }
 
-        /* Efecto glitch global */
         @keyframes globalGlitch {
             0% { transform: translate(0); filter: hue-rotate(0deg); }
             20% { transform: translate(-2px, 1px); filter: hue-rotate(45deg); }
@@ -115,18 +114,18 @@
             transform: translateY(4px);
         }
 
-        /* JOYSTICK MEJORADO - Estilo Santa Defender */
+        /* JOYSTICK REVISADO - MOVIMIENTO FLUIDO */
         .touch-joystick-area {
             display: none;
             position: relative;
             width: 140px;
             height: 140px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 70px;
             margin: 10px auto;
-            border: 2px solid rgba(246, 185, 59, 0.6);
-            box-shadow: 0 0 15px rgba(246, 185, 59, 0.3);
-            backdrop-filter: blur(2px);
+            border: 2px solid rgba(246, 185, 59, 0.8);
+            box-shadow: 0 0 20px rgba(246, 185, 59, 0.4);
+            backdrop-filter: blur(4px);
             touch-action: none;
         }
 
@@ -147,19 +146,20 @@
             background: radial-gradient(circle at 30% 30%, #6a89cc, #4a69bd);
             border-radius: 30px;
             position: absolute;
+            left: 40px;
+            top: 40px;
             box-shadow: 0 0 15px rgba(74, 105, 189, 0.8), 0 4px 0 #1e3799;
             border: 2px solid #f6b93b;
-            transition: transform 0.02s linear; /* Transición más rápida para respuesta inmediata */
-            will-change: transform;
+            transition: none; /* SIN TRANSICIÓN - respuesta instantánea */
+            will-change: transform, left, top;
             touch-action: none;
             pointer-events: none;
         }
 
-        .joystick-handle:active {
+        .joystick-handle.active {
             background: radial-gradient(circle at 30% 30%, #f6b93b, #e55039);
         }
 
-        /* Capa de glitch overlay */
         .glitch-overlay {
             position: absolute;
             top: 0;
@@ -250,19 +250,16 @@
 </head>
 <body>
     <div class="game-wrapper">
-        <!-- Canvas principal -->
         <canvas id="gameCanvas" width="600" height="600"></canvas>
         
-        <!-- Capa de glitch overlay -->
         <div class="glitch-overlay" id="glitchOverlay"></div>
         
-        <!-- HUD -->
         <div class="hud">
             <div>👥 SEGUIDORES: <span id="followerCount">0</span> / <span id="requiredFollowers">5</span></div>
             <div>⚡ POWER: <span id="powerUpStatus">-</span></div>
         </div>
 
-        <!-- Controles táctiles MEJORADOS -->
+        <!-- CONTROLES TÁCTILES REVISADOS -->
         <div class="touch-controls">
             <div class="touch-joystick-area" id="joystickArea">
                 <div class="joystick-base">
@@ -280,7 +277,6 @@
             <p style="color: #78e08f; margin-top: 5px;">¡EL PUEBLO UNO JAMÁS SERÁ VENCIDO!</p>
         </div>
 
-        <!-- Pantallas -->
         <div id="startScreen" class="screen">
             <h1 style="color: #f6b93b; font-size: 28px; text-shadow: 3px 3px 0 #e55039;">REVOLUCIÓN</h1>
             <h1 style="color: #f6b93b; font-size: 28px; margin-top: -10px; text-shadow: 3px 3px 0 #e55039;">COLECTIVA</h1>
@@ -307,44 +303,31 @@
         const ctx = canvas.getContext('2d');
         const isTouchDevice = 'ontouchstart' in window;
 
-        // Elementos DOM
         const followerSpan = document.getElementById('followerCount');
         const requiredSpan = document.getElementById('requiredFollowers');
         const powerUpSpan = document.getElementById('powerUpStatus');
         const glitchOverlay = document.getElementById('glitchOverlay');
 
-        // ========== SISTEMA DE GLITCH ANIMACIONES ==========
-        let glitchIntensity = 0;
-        
+        // ========== SISTEMA DE GLITCH ==========
         function triggerGlitch(intensity = 1, duration = 500) {
-            glitchIntensity = intensity;
             glitchOverlay.classList.add('active');
             glitchOverlay.style.opacity = intensity * 0.7;
-            
-            // Agregar clase glitch al wrapper
             document.querySelector('.game-wrapper').classList.add('glitch-effect');
             
             setTimeout(() => {
                 glitchOverlay.classList.remove('active');
                 document.querySelector('.game-wrapper').classList.remove('glitch-effect');
-                glitchIntensity = 0;
             }, duration);
         }
 
         function triggerVictoryGlitch() {
-            // Glitch épico para victoria
             triggerGlitch(1, 800);
-            
-            // Múltiples ondas de glitch
             setTimeout(() => triggerGlitch(0.8, 300), 200);
             setTimeout(() => triggerGlitch(0.6, 200), 500);
         }
 
         function triggerDefeatGlitch() {
-            // Glitch trágico para derrota
             triggerGlitch(1, 600);
-            
-            // Ondas de glitch más caóticas
             setTimeout(() => triggerGlitch(0.9, 200), 150);
             setTimeout(() => triggerGlitch(0.7, 200), 350);
             setTimeout(() => triggerGlitch(0.5, 200), 550);
@@ -353,22 +336,21 @@
         // ========== VARIABLES DEL JUEGO ==========
         let gameRunning = false;
         
-        // Jugador
+        // JUGADOR - velocidad ajustada
         let player = {
             x: 100,
             y: 100,
             size: 16,
-            speed: 3.2, // Velocidad aumentada ligeramente
+            speed: 3.8, // Velocidad aumentada para mejor respuesta
             color: '#4a69bd'
         };
 
-        // Colecciones
         let followers = [];
         let citizens = [];
         let enemies = [];
         let boss = null;
 
-        // Laberinto simple (8x8)
+        // LABERINTO - simplificado para mejor colisión
         let maze = [
             [1,1,1,1,1,1,1,1],
             [1,0,0,0,0,0,0,1],
@@ -383,26 +365,25 @@
         let mazeSize = 8;
         let tileSize = 60;
 
-        // Jefe
         let bossRequiredFollowers = 5;
         let powerUpActive = false;
         let powerUpTimer = 0;
         let powerUpType = '';
 
-        // Controles PC
+        // CONTROLES PC
         let keys = {
             w: false, a: false, s: false, d: false,
             arrowup: false, arrowdown: false, arrowleft: false, arrowright: false,
             space: false
         };
 
-        // ========== JOYSTICK MEJORADO - SANTA DEFENDER STYLE ==========
+        // ========== JOYSTICK REVISADO - MOVIMIENTO FLUIDO ==========
         let joystick = {
             active: false,
             x: 0,
             y: 0,
-            magnitude: 0,
-            angle: 0
+            rawX: 0,
+            rawY: 0
         };
 
         function setupJoystick() {
@@ -411,10 +392,15 @@
             
             if (!joystickArea) return;
 
-            // Eventos touch con mejor respuesta
+            // Posición inicial del handle
+            joystickHandle.style.left = '40px';
+            joystickHandle.style.top = '40px';
+
+            // INICIO del joystick
             joystickArea.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 joystick.active = true;
+                joystickHandle.classList.add('active');
                 
                 const touch = e.touches[0];
                 const rect = joystickArea.getBoundingClientRect();
@@ -424,6 +410,7 @@
                 updateJoystickPosition(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
             });
 
+            // MOVIMIENTO del joystick
             document.addEventListener('touchmove', (e) => {
                 if (!joystick.active) return;
                 e.preventDefault();
@@ -436,6 +423,7 @@
                 updateJoystickPosition(touch.clientX, touch.clientY, centerX, centerY, joystickHandle);
             });
 
+            // FIN del joystick
             document.addEventListener('touchend', (e) => {
                 if (!joystick.active) return;
                 e.preventDefault();
@@ -443,12 +431,27 @@
                 joystick.active = false;
                 joystick.x = 0;
                 joystick.y = 0;
-                joystick.magnitude = 0;
+                joystick.rawX = 0;
+                joystick.rawY = 0;
+                joystickHandle.classList.remove('active');
                 
-                // Reset suave del joystick
-                joystickHandle.style.transform = 'translate(-50%, -50%) translate(0px, 0px)';
-                joystickHandle.style.left = '50%';
-                joystickHandle.style.top = '50%';
+                // Resetear posición visual INMEDIATAMENTE
+                joystickHandle.style.left = '40px';
+                joystickHandle.style.top = '40px';
+            });
+
+            document.addEventListener('touchcancel', (e) => {
+                if (!joystick.active) return;
+                e.preventDefault();
+                
+                joystick.active = false;
+                joystick.x = 0;
+                joystick.y = 0;
+                joystick.rawX = 0;
+                joystick.rawY = 0;
+                joystickHandle.classList.remove('active');
+                joystickHandle.style.left = '40px';
+                joystickHandle.style.top = '40px';
             });
         }
 
@@ -457,46 +460,44 @@
             let dx = touchX - centerX;
             let dy = touchY - centerY;
             
-            // Distancia máxima (radio del joystick)
-            const maxDistance = 45;
+            // Distancia máxima (radio efectivo)
+            const maxDistance = 40;
             
             // Calcular distancia
             let distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Limitar a la distancia máxima
+            // Guardar valores raw (sin normalizar)
+            joystick.rawX = dx;
+            joystick.rawY = dy;
+            
+            // Limitar a la distancia máxima y calcular valores normalizados
             if (distance > maxDistance) {
                 dx = (dx / distance) * maxDistance;
                 dy = (dy / distance) * maxDistance;
                 distance = maxDistance;
             }
             
-            // Calcular magnitud normalizada (0-1)
-            const magnitude = distance / maxDistance;
-            
-            // Guardar valores del joystick
-            joystick.x = dx / maxDistance;  // Normalizado entre -1 y 1
+            // VALORES NORMALIZADOS (-1 a 1) - CRÍTICO PARA MOVIMIENTO FLUIDO
+            joystick.x = dx / maxDistance;
             joystick.y = dy / maxDistance;
-            joystick.magnitude = magnitude;
             
-            // Actualizar posición visual - usando transform para mejor performance
-            handle.style.transform = `translate(-50%, -50%) translate(${dx}px, ${dy}px)`;
-            handle.style.left = '50%';
-            handle.style.top = '50%';
+            // Actualizar posición visual - USANDO left/top en lugar de transform
+            // Esto es más directo y evita problemas de transform
+            handle.style.left = (40 + dx) + 'px';
+            handle.style.top = (40 + dy) + 'px';
         }
 
-        // ========== FUNCIONES PRINCIPALES ==========
+        // ========== FUNCIONES DEL JUEGO ==========
         function initGame() {
-            // Resetear jugador
             player.x = 100;
             player.y = 100;
-            player.speed = 3.2;
+            player.speed = 3.8;
 
-            // Resetear colecciones
             followers = [];
             citizens = [];
             enemies = [];
 
-            // Crear ciudadanos (10-15)
+            // Ciudadanos
             const numCitizens = 10 + Math.floor(Math.random() * 6);
             for (let i = 0; i < numCitizens; i++) {
                 let x, y, attempts = 0;
@@ -515,7 +516,7 @@
                 });
             }
 
-            // Crear enemigos (3-5)
+            // Enemigos
             const numEnemies = 3 + Math.floor(Math.random() * 3);
             for (let i = 0; i < numEnemies; i++) {
                 let x, y, attempts = 0;
@@ -531,13 +532,13 @@
                     y: y * tileSize + tileSize/2,
                     size: 16,
                     color: '#e55039',
-                    speed: 1.2,
+                    speed: 1.0,
                     dx: (Math.random() - 0.5) * 2,
                     dy: (Math.random() - 0.5) * 2
                 });
             }
 
-            // Crear jefe (esquina opuesta)
+            // Jefe
             let bossX, bossY;
             do {
                 bossX = Math.floor(Math.random() * (mazeSize - 2)) + 1;
@@ -554,7 +555,6 @@
                 maxHealth: bossRequiredFollowers * 2
             };
 
-            // Actualizar HUD
             followerSpan.textContent = followers.length;
             requiredSpan.textContent = bossRequiredFollowers;
             powerUpSpan.textContent = '-';
@@ -591,7 +591,7 @@
             });
         }
 
-        // ========== MECÁNICAS CON GLITCH ==========
+        // ========== MECÁNICAS ==========
         function recruitCitizens() {
             if (!gameRunning) return;
             
@@ -606,9 +606,7 @@
                         x: citizen.x,
                         y: citizen.y,
                         size: 12,
-                        color: '#f6b93b',
-                        offsetX: 0,
-                        offsetY: 0
+                        color: '#f6b93b'
                     });
                     citizens.splice(i, 1);
                     recruited++;
@@ -616,7 +614,6 @@
             }
             
             if (recruited > 0) {
-                // GLITCH ANIMATION al reclutar
                 triggerGlitch(0.4, 200);
                 followerSpan.textContent = followers.length;
             }
@@ -626,7 +623,7 @@
             if (!gameRunning) return;
             
             powerUpActive = true;
-            powerUpTimer = 240; // 4 segundos
+            powerUpTimer = 240;
             
             const types = ['speed', 'protection', 'recruit'];
             powerUpType = types[Math.floor(Math.random() * 3)];
@@ -635,13 +632,11 @@
                                      powerUpType === 'protection' ? '🛡️ PROTECCIÓN' : 
                                      '📢 RECLUTAMIENTO';
             
-            // Glitch al activar power-up
             triggerGlitch(0.5, 300);
             
             if (powerUpType === 'speed') {
-                player.speed = 5;
+                player.speed = 5.5;
             } else if (powerUpType === 'recruit') {
-                // Reclutar ciudadanos cercanos
                 for (let i = citizens.length - 1; i >= 0; i--) {
                     const citizen = citizens[i];
                     const dist = Math.hypot(player.x - citizen.x, player.y - citizen.y);
@@ -650,9 +645,7 @@
                             x: citizen.x,
                             y: citizen.y,
                             size: 12,
-                            color: '#f6b93b',
-                            offsetX: 0,
-                            offsetY: 0
+                            color: '#f6b93b'
                         });
                         citizens.splice(i, 1);
                     }
@@ -661,50 +654,66 @@
             }
         }
 
-        // ========== ACTUALIZACIÓN ==========
-        function update() {
-            if (!gameRunning) return;
-
-            // Movimiento del jugador - combinando teclado y joystick
+        // ========== SISTEMA DE MOVIMIENTO FLUIDO REVISADO ==========
+        function movePlayer() {
             let moveX = 0, moveY = 0;
             
-            // Teclado PC
+            // TECLADO - input digital
             if (keys.w || keys.arrowup) moveY -= 1;
             if (keys.s || keys.arrowdown) moveY += 1;
             if (keys.a || keys.arrowleft) moveX -= 1;
             if (keys.d || keys.arrowright) moveX += 1;
             
-            // Joystick táctil - VALORES NORMALIZADOS para movimiento fluido
+            // JOYSTICK - input analógico (ya normalizado entre -1 y 1)
             if (joystick.active) {
                 moveX += joystick.x;
                 moveY += joystick.y;
             }
             
-            // Aplicar movimiento si hay input
+            // Si hay movimiento
             if (moveX !== 0 || moveY !== 0) {
-                // Normalizar para movimiento diagonal uniforme
+                // Normalizar para velocidad constante en diagonal
                 const length = Math.sqrt(moveX * moveX + moveY * moveY);
                 moveX = (moveX / length) * player.speed;
                 moveY = (moveY / length) * player.speed;
                 
-                const newX = player.x + moveX;
-                const newY = player.y + moveY;
+                // MOVIMIENTO POR EJES SEPARADOS - COLISIÓN FLUIDA
                 
-                // Colisión con paredes
-                const tileX = Math.floor(newX / tileSize);
-                const tileY = Math.floor(newY / tileSize);
+                // Movimiento en X
+                let newX = player.x + moveX;
+                let tileX = Math.floor(newX / tileSize);
+                let tileY = Math.floor(player.y / tileSize);
                 
+                // Verificar colisión en X
                 if (tileX >= 0 && tileX < mazeSize && tileY >= 0 && tileY < mazeSize) {
                     if (maze[tileY][tileX] === 0) {
                         player.x = newX;
+                    }
+                }
+                
+                // Movimiento en Y
+                let newY = player.y + moveY;
+                tileX = Math.floor(player.x / tileSize);
+                tileY = Math.floor(newY / tileSize);
+                
+                // Verificar colisión en Y
+                if (tileX >= 0 && tileX < mazeSize && tileY >= 0 && tileY < mazeSize) {
+                    if (maze[tileY][tileX] === 0) {
                         player.y = newY;
                     }
                 }
             }
-
-            // Mantener en canvas
+            
+            // Limitar al canvas (por si acaso)
             player.x = Math.max(tileSize/2, Math.min(player.x, canvas.width - tileSize/2));
             player.y = Math.max(tileSize/2, Math.min(player.y, canvas.height - tileSize/2));
+        }
+
+        function update() {
+            if (!gameRunning) return;
+
+            // MOVER JUGADOR - función dedicada
+            movePlayer();
 
             // Actualizar seguidores
             for (let i = 0; i < followers.length; i++) {
@@ -716,24 +725,23 @@
                 const dist = Math.hypot(dx, dy);
                 
                 if (dist > 25) {
-                    follower.x += (dx / dist) * player.speed * 0.7;
-                    follower.y += (dy / dist) * player.speed * 0.7;
+                    follower.x += (dx / dist) * player.speed * 0.6;
+                    follower.y += (dy / dist) * player.speed * 0.6;
                 }
             }
 
             // Actualizar enemigos
             for (let enemy of enemies) {
-                // Movimiento más natural
                 if (Math.random() < 0.02) {
                     const angle = Math.random() * Math.PI * 2;
                     enemy.dx = Math.cos(angle) * enemy.speed;
                     enemy.dy = Math.sin(angle) * enemy.speed;
                 }
                 
-                const newX = enemy.x + enemy.dx;
-                const newY = enemy.y + enemy.dy;
-                const tileX = Math.floor(newX / tileSize);
-                const tileY = Math.floor(newY / tileSize);
+                let newX = enemy.x + enemy.dx;
+                let newY = enemy.y + enemy.dy;
+                let tileX = Math.floor(newX / tileSize);
+                let tileY = Math.floor(newY / tileSize);
                 
                 if (tileX >= 0 && tileX < mazeSize && tileY >= 0 && tileY < mazeSize && maze[tileY][tileX] === 0) {
                     enemy.x = newX;
@@ -770,14 +778,9 @@
                 
                 if (distToBoss < 70) {
                     if (followers.length >= bossRequiredFollowers) {
-                        boss.health -= 0.8; // Daño más rápido
-                        
-                        // Pequeño glitch al dañar al boss
+                        boss.health -= 0.8;
                         if (Math.random() < 0.1) triggerGlitch(0.2, 50);
-                        
-                        if (boss.health <= 0) {
-                            victory();
-                        }
+                        if (boss.health <= 0) victory();
                     }
                 }
             }
@@ -789,18 +792,16 @@
                     powerUpActive = false;
                     powerUpSpan.textContent = '-';
                     if (powerUpType === 'speed') {
-                        player.speed = 3.2;
+                        player.speed = 3.8;
                     }
                 }
             }
         }
 
-        // ========== DIBUJADO ==========
         function draw() {
-            // Limpiar canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Dibujar laberinto
+            // Laberinto
             for (let y = 0; y < mazeSize; y++) {
                 for (let x = 0; x < mazeSize; x++) {
                     if (maze[y][x] === 1) {
@@ -812,13 +813,12 @@
                 }
             }
 
-            // Dibujar ciudadanos
+            // Ciudadanos
             for (let citizen of citizens) {
                 ctx.fillStyle = citizen.color;
                 ctx.beginPath();
                 ctx.arc(citizen.x, citizen.y, citizen.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                // Ojos
                 ctx.fillStyle = 'white';
                 ctx.beginPath();
                 ctx.arc(citizen.x - 3, citizen.y - 3, 2, 0, Math.PI * 2);
@@ -826,13 +826,12 @@
                 ctx.fill();
             }
 
-            // Dibujar enemigos
+            // Enemigos
             for (let enemy of enemies) {
                 ctx.fillStyle = enemy.color;
                 ctx.beginPath();
                 ctx.arc(enemy.x, enemy.y, enemy.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                // Ojos enojados
                 ctx.fillStyle = 'white';
                 ctx.beginPath();
                 ctx.arc(enemy.x - 4, enemy.y - 4, 3, 0, Math.PI * 2);
@@ -845,13 +844,12 @@
                 ctx.fill();
             }
 
-            // Dibujar seguidores
+            // Seguidores
             for (let follower of followers) {
                 ctx.fillStyle = follower.color;
                 ctx.beginPath();
                 ctx.arc(follower.x, follower.y, follower.size/2, 0, Math.PI * 2);
                 ctx.fill();
-                // Bandera revolucionaria
                 ctx.fillStyle = '#e55039';
                 ctx.fillRect(follower.x + 5, follower.y - 10, 6, 12);
                 ctx.fillStyle = '#f6b93b';
@@ -863,14 +861,13 @@
                 ctx.fill();
             }
 
-            // Dibujar jefe
+            // Jefe
             if (boss) {
                 ctx.fillStyle = boss.color;
                 ctx.beginPath();
                 ctx.arc(boss.x, boss.y, boss.size/2, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Corona opresora
                 ctx.fillStyle = '#f6b93b';
                 ctx.beginPath();
                 ctx.moveTo(boss.x - 20, boss.y - 20);
@@ -880,7 +877,6 @@
                 ctx.lineTo(boss.x + 20, boss.y - 20);
                 ctx.fill();
                 
-                // Barra de vida
                 ctx.fillStyle = '#333';
                 ctx.fillRect(boss.x - 50, boss.y - 50, 100, 10);
                 ctx.fillStyle = '#e55039';
@@ -889,13 +885,12 @@
                 ctx.strokeRect(boss.x - 50, boss.y - 50, 100, 10);
             }
 
-            // Dibujar jugador
+            // Jugador
             ctx.fillStyle = player.color;
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Ojos del líder
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(player.x - 4, player.y - 4, 3, 0, Math.PI * 2);
@@ -907,7 +902,6 @@
             ctx.arc(player.x + 3, player.y - 5, 1.5, 0, Math.PI * 2);
             ctx.fill();
             
-            // Bandera del líder
             ctx.fillStyle = '#e55039';
             ctx.fillRect(player.x + 8, player.y - 12, 8, 16);
             ctx.fillStyle = '#f6b93b';
@@ -918,7 +912,6 @@
             ctx.closePath();
             ctx.fill();
             
-            // Efecto power-up
             if (powerUpActive) {
                 ctx.strokeStyle = powerUpType === 'speed' ? '#78e08f' : 
                                  powerUpType === 'protection' ? '#4a69bd' : '#f6b93b';
@@ -926,8 +919,6 @@
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.size/2 + 5, 0, Math.PI * 2);
                 ctx.stroke();
-                
-                // Timer visual
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 12px "Courier New", monospace';
                 ctx.textAlign = 'center';
@@ -935,26 +926,21 @@
             }
         }
 
-        // ========== ESTADOS DEL JUEGO CON GLITCH ==========
         function gameOver() {
             gameRunning = false;
-            triggerDefeatGlitch(); // GLITCH ÉPICO DE DERROTA
-            
+            triggerDefeatGlitch();
             document.getElementById('gameOverText').innerHTML = 
                 `✖ REVOLUCIÓN FRACASADA ✖<br><br>` +
-                `Reuniste ${followers.length} de ${bossRequiredFollowers} seguidores.<br>` +
-                `"El sistema nos venció... por ahora."`;
+                `Reuniste ${followers.length} de ${bossRequiredFollowers} seguidores.`;
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
 
         function victory() {
             gameRunning = false;
-            triggerVictoryGlitch(); // GLITCH ÉPICO DE VICTORIA
-            
+            triggerVictoryGlitch();
             document.getElementById('winText').innerHTML = 
                 `✨ ¡EL PUEBLO VENCIÓ! ✨<br><br>` +
-                `Derrotaste al opresor con ${followers.length} seguidores.<br>` +
-                `"La unión hace la fuerza."`;
+                `Derrotaste al opresor con ${followers.length} seguidores.`;
             document.getElementById('winScreen').classList.remove('hidden');
         }
 
@@ -963,7 +949,6 @@
             setupKeyboardControls();
             setupJoystick();
             
-            // Botones
             document.getElementById('startBtn').addEventListener('click', () => {
                 document.getElementById('startScreen').classList.add('hidden');
                 initGame();
@@ -979,7 +964,6 @@
                 initGame();
             });
             
-            // Botones táctiles
             document.getElementById('recruitBtn').addEventListener('click', recruitCitizens);
             document.getElementById('recruitBtn').addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -993,7 +977,6 @@
             });
         }
 
-        // Game loop
         function gameLoop() {
             if (gameRunning) {
                 update();
@@ -1002,7 +985,6 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Arrancar todo
         initialize();
         gameLoop();
     </script>
