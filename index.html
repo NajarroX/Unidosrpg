@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GUARDIANES · ARENA + GAMEPAD MATERIAL</title>
+    <title>GUARDIANES · ARENA + GAMEPADS</title>
     <style>
         * {
             margin: 0;
@@ -23,9 +23,90 @@
             touch-action: manipulation;
         }
 
-        /* ===== VISTA PC / PROYECTOR (solo canvas) ===== */
-        .presentation-mode {
+        /* Pantalla de selección de rol */
+        .role-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a0b2e 0%, #0d0b1a 100%);
             display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .role-title {
+            font-size: 2.5rem;
+            color: #00ffff;
+            text-shadow: 0 0 20px cyan;
+            margin-bottom: 40px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+
+        .role-buttons {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .role-btn {
+            padding: 30px 50px;
+            border-radius: 40px;
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            min-width: 280px;
+        }
+
+        .arena-btn {
+            background: #6200ee;
+            color: white;
+            border: 4px solid #bb86fc;
+        }
+
+        .arena-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px #6200ee;
+        }
+
+        .controller-btn {
+            background: #03dac6;
+            color: black;
+            border: 4px solid #00ffff;
+        }
+
+        .controller-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px #03dac6;
+        }
+
+        .qr-code {
+            margin-top: 50px;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .qr-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* VISTA ARENA (proyector) */
+        .presentation-mode {
+            display: none;
             justify-content: center;
             align-items: center;
             width: 100%;
@@ -44,7 +125,7 @@
             box-shadow: 0 0 30px #00ffff, 0 0 60px #ff00ff;
         }
 
-        /* ===== VISTA MÓVIL GAMEPAD (solo controles Material Design) ===== */
+        /* VISTA GAMEPAD (móviles) */
         .gamepad-mode {
             display: none;
             width: 100%;
@@ -57,7 +138,6 @@
             box-shadow: inset 0 0 20px rgba(0,255,255,0.2);
         }
 
-        /* Header Material */
         .gamepad-header {
             text-align: center;
             margin-bottom: 20px;
@@ -95,7 +175,21 @@
             box-shadow: 0 0 15px cyan;
         }
 
-        /* Joystick Material */
+        .health-material {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .health-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background: #00ffaa;
+            box-shadow: 0 0 10px #00ffaa;
+        }
+
         .joystick-container {
             display: flex;
             justify-content: center;
@@ -131,7 +225,6 @@
             touch-action: none;
         }
 
-        /* Botones Material Design */
         .buttons-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -175,7 +268,6 @@
             box-shadow: 0 8px 12px 0 rgba(3, 218, 198, 0.3);
         }
 
-        /* Estado de conexión */
         .connection-status {
             background: #1e1e1e;
             border-radius: 28px;
@@ -188,57 +280,59 @@
             border: 1px solid #333;
         }
 
-        .health-material {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin: 16px 0;
+        .waiting-message {
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 50px;
+            text-align: center;
         }
 
-        .health-dot {
-            width: 24px;
-            height: 24px;
-            border-radius: 12px;
-            background: #00ffaa;
-            box-shadow: 0 0 10px #00ffaa;
+        .player-id {
+            font-size: 3rem;
+            color: #00ffff;
+            text-shadow: 0 0 20px cyan;
+            margin: 20px 0;
         }
 
-        /* Ocultar/mostrar según dispositivo */
-        @media (hover: none) and (pointer: coarse) and (max-width: 1024px) {
-            .presentation-mode {
-                display: none;
-            }
-            .gamepad-mode {
-                display: flex;
-            }
-            body {
-                background: #121212;
-            }
-        }
-
-        @media (hover: hover) and (pointer: fine) {
-            .presentation-mode {
-                display: flex;
-            }
-            .gamepad-mode {
-                display: none;
-            }
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <!-- VISTA PROYECTOR / PC (SOLO CANVAS) -->
-    <div class="presentation-mode">
+    <!-- Pantalla de selección de rol (solo aparece al inicio) -->
+    <div class="role-screen" id="roleScreen">
+        <div class="role-title">GUARDIANES DEL TERRITORIO</div>
+        <div class="role-buttons">
+            <button class="role-btn arena-btn" onclick="selectRole('arena')">
+                🖥️ SERVIDOR<br><small style="font-size: 1rem;">(PC / PROYECTOR)</small>
+            </button>
+            <button class="role-btn controller-btn" onclick="selectRole('controller')">
+                🎮 JUGADOR<br><small style="font-size: 1rem;">(MÓVIL / CONTROL)</small>
+            </button>
+        </div>
+        <div class="qr-code" id="qrContainer">
+            <div style="background: white; padding: 10px; border-radius: 10px;">
+                <span style="color: black; font-size: 1.2rem;" id="urlDisplay">Cargando...</span>
+            </div>
+        </div>
+        <div class="qr-text">
+            Escanea para conectar más jugadores
+        </div>
+    </div>
+
+    <!-- VISTA ARENA (PROYECTOR) -->
+    <div class="presentation-mode" id="arenaView">
         <canvas id="gameCanvas" width="800" height="800"></canvas>
     </div>
 
-    <!-- VISTA MÓVIL GAMEPAD (SOLO CONTROLES MATERIAL DESIGN) -->
-    <div class="gamepad-mode" id="gamepadUI">
+    <!-- VISTA GAMEPAD (MÓVILES) -->
+    <div class="gamepad-mode" id="gamepadView">
         <div class="gamepad-header">
             <div class="gamepad-title">GUARDIANES</div>
             <div class="player-chip" id="playerChip">
                 <div class="chip-avatar" id="playerColor"></div>
-                <span id="playerIdText">JUGADOR 1</span>
+                <span id="playerIdText">CONECTANDO...</span>
             </div>
         </div>
 
@@ -250,52 +344,57 @@
             <div class="health-dot"></div>
         </div>
 
-        <div class="joystick-container">
-            <div class="md-joystick" id="joystickBase">
-                <div class="md-joystick-thumb" id="joystickThumb"></div>
+        <div class="waiting-message" id="waitingMessage">
+            ESPERANDO<br>ASIGNACIÓN...
+            <div class="player-id" id="assignedPlayer">-</div>
+        </div>
+
+        <div id="controlsContainer" style="display: none;">
+            <div class="joystick-container">
+                <div class="md-joystick" id="joystickBase">
+                    <div class="md-joystick-thumb" id="joystickThumb"></div>
+                </div>
+            </div>
+
+            <div class="buttons-grid">
+                <button class="md-button" id="actionShoot">
+                    <span>🔫</span> DISPARAR
+                </button>
+                <button class="md-button secondary" id="actionSpecial">
+                    <span>🛡️</span> ESCUDO
+                </button>
             </div>
         </div>
 
-        <div class="buttons-grid">
-            <button class="md-button" id="actionShoot">
-                <span>🔫</span> DISPARAR
-            </button>
-            <button class="md-button secondary" id="actionSpecial">
-                <span>🛡️</span> ESCUDO
-            </button>
-        </div>
-
         <div class="connection-status" id="connectionStatus">
-            ⚡ CONECTADO A LA ARENA
+            ⚡ ESPERANDO ARENA...
         </div>
     </div>
 
     <script>
-        (function() {
-            // ========== CONFIGURACIÓN JUEGO ==========
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas?.getContext('2d');
-            if (ctx) ctx.imageSmoothingEnabled = false;
+        // ========== SISTEMA DE ROLES Y COMUNICACIÓN ==========
+        let role = null; // 'arena' o 'controller'
+        let channel = null;
+        let myPlayerIndex = -1;
+        
+        // Estado del juego (solo para arena)
+        let players = [];
+        let enemies = [];
+        let powerups = [];
+        let bullets = [];
+        
+        // Configuración
+        const MAX_PLAYERS = 4;
+        const PLAYER_RADIUS = 20;
+        const ENEMY_RADIUS = 18;
+        const CANVAS_SIZE = 800;
+        const playerColors = ['#00ffff', '#ffaa00', '#ff44ee', '#00ffaa'];
+        const playerStartPos = [
+            {x: 200, y: 200}, {x: 600, y: 200}, {x: 200, y: 600}, {x: 600, y: 600}
+        ];
 
-            const MAX_PLAYERS = 4;
-            const PLAYER_RADIUS = 20;
-            const ENEMY_RADIUS = 18;
-            const CANVAS_SIZE = 800;
-
-            // Estado del juego
-            let players = [];
-            let enemies = [];
-            let powerups = [];
-            let bullets = [];
-            let gameActive = true;
-
-            // Colores neon
-            const playerColors = ['#00ffff', '#ffaa00', '#ff44ee', '#00ffaa'];
-            const playerStartPos = [
-                {x: 200, y: 200}, {x: 600, y: 200}, {x: 200, y: 600}, {x: 600, y: 600}
-            ];
-
-            // Inicializar 4 jugadores
+        // Inicializar jugadores (solo arena)
+        function initPlayers() {
             for (let i = 0; i < MAX_PLAYERS; i++) {
                 players.push({
                     id: `p${i}`,
@@ -309,113 +408,178 @@
                     angle: 0,
                     shootCooldown: 0,
                     speed: 4,
-                    fireRate: 15,
                     powerUp: null,
                     shield: false,
                     active: true,
-                    kills: 0,
-                    connected: false, // para saber si un móvil lo controla
+                    connected: false,
                     moveX: 0,
                     moveY: 0,
                     shooting: false,
                     special: false
                 });
             }
+        }
 
-            // Clases
-            class Enemy {
-                constructor() {
-                    this.radius = ENEMY_RADIUS;
-                    this.x = Math.random() * CANVAS_SIZE;
-                    this.y = Math.random() * CANVAS_SIZE;
-                    this.hp = 40;
-                    this.speed = 1.8;
-                    this.color = '#ff2266';
-                    this.damage = 15;
-                }
+        // Clases
+        class Enemy {
+            constructor() {
+                this.radius = ENEMY_RADIUS;
+                this.x = Math.random() * CANVAS_SIZE;
+                this.y = Math.random() * CANVAS_SIZE;
+                this.hp = 40;
+                this.speed = 1.8;
+                this.color = '#ff2266';
+                this.damage = 15;
             }
+        }
 
-            class PowerUp {
-                constructor(x, y, type) {
-                    this.x = x; this.y = y; this.type = type;
-                    this.radius = 15;
-                    this.color = type === 'rapid' ? '#ffff00' : '#00ccff';
-                    this.duration = 450;
-                }
+        class PowerUp {
+            constructor(x, y, type) {
+                this.x = x; this.y = y; this.type = type;
+                this.radius = 15;
+                this.color = type === 'rapid' ? '#ffff00' : '#00ccff';
+                this.duration = 450;
             }
+        }
 
-            // ========== SISTEMA DE ASIGNACIÓN DE JUGADORES ==========
-            // Los móviles que se conectan toman el control de un jugador libre
-            let connectedClients = []; // guardamos los índices ocupados
-
-            // Función para asignar un jugador a un nuevo móvil
-            function assignPlayerToMobile() {
-                for (let i = 0; i < players.length; i++) {
-                    if (!players[i].connected) {
-                        players[i].connected = true;
-                        return i;
+        // ========== SELECCIÓN DE ROL ==========
+        window.selectRole = function(selectedRole) {
+            role = selectedRole;
+            document.getElementById('roleScreen').style.display = 'none';
+            
+            // Inicializar comunicación
+            channel = new BroadcastChannel('guardianes_game');
+            
+            if (role === 'arena') {
+                // Este dispositivo es la arena (proyector)
+                document.getElementById('arenaView').style.display = 'flex';
+                initPlayers();
+                startArena();
+            } else {
+                // Este dispositivo es un controlador (móvil)
+                document.getElementById('gamepadView').style.display = 'flex';
+                startController();
+            }
+            
+            // Configurar comunicación
+            channel.onmessage = (event) => {
+                const data = event.data;
+                
+                if (role === 'arena') {
+                    // Recibir comandos de controladores
+                    if (data.type === 'controller_input' && players[data.playerIndex]) {
+                        const p = players[data.playerIndex];
+                        p.moveX = data.moveX;
+                        p.moveY = data.moveY;
+                        p.shooting = data.shooting;
+                        p.special = data.special;
+                    }
+                    
+                    if (data.type === 'request_connection') {
+                        // Asignar jugador disponible
+                        for (let i = 0; i < players.length; i++) {
+                            if (!players[i].connected) {
+                                players[i].connected = true;
+                                channel.postMessage({
+                                    type: 'connection_assigned',
+                                    playerIndex: i,
+                                    color: players[i].color
+                                });
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // Recibir asignación de la arena
+                    if (data.type === 'connection_assigned') {
+                        myPlayerIndex = data.playerIndex;
+                        document.getElementById('waitingMessage').style.display = 'none';
+                        document.getElementById('controlsContainer').style.display = 'block';
+                        document.getElementById('connectionStatus').innerHTML = '✅ CONECTADO A LA ARENA';
+                        document.getElementById('playerIdText').innerText = `JUGADOR ${myPlayerIndex + 1}`;
+                        document.getElementById('playerColor').style.background = data.color;
+                    }
+                    
+                    // Recibir actualizaciones de estado (para UI)
+                    if (data.type === 'game_state' && myPlayerIndex >= 0) {
+                        const myPlayer = data.players[myPlayerIndex];
+                        if (myPlayer) {
+                            updateGamepadUI(myPlayer);
+                        }
                     }
                 }
-                return -1; // todos ocupados
-            }
+            };
+            
+            // Mostrar URL para compartir
+            const url = window.location.href;
+            document.getElementById('urlDisplay').innerText = url;
+        };
 
-            // Liberar jugador (cuando el móvil se desconecta)
-            function releasePlayer(index) {
-                if (index >= 0 && index < players.length) {
-                    players[index].connected = false;
-                    players[index].moveX = 0;
-                    players[index].moveY = 0;
-                    players[index].shooting = false;
-                    players[index].special = false;
+        // ========== ARENA (PROYECTOR) ==========
+        function startArena() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            // Generar enemigos
+            setInterval(() => {
+                if (enemies.length < 8) {
+                    enemies.push(new Enemy());
                 }
+            }, 2000);
+
+            setInterval(() => {
+                if (powerups.length < 3) {
+                    const type = Math.random() > 0.5 ? 'rapid' : 'shield';
+                    powerups.push(new PowerUp(
+                        Math.random() * 700 + 50,
+                        Math.random() * 700 + 50,
+                        type
+                    ));
+                }
+            }, 8000);
+
+            function gameLoop() {
+                updateGame();
+                drawGame(ctx);
+                
+                // Enviar estado a todos los controladores
+                channel.postMessage({
+                    type: 'game_state',
+                    players: players.map(p => ({
+                        hp: p.hp,
+                        connected: p.connected,
+                        index: p.index,
+                        color: p.color
+                    }))
+                });
+                
+                requestAnimationFrame(gameLoop);
             }
 
-            // ========== LÓGICA DEL JUEGO (actualización) ==========
             function updateGame() {
-                if (!gameActive) return;
-
-                // Actualizar cada jugador conectado
                 for (let p of players) {
                     if (!p.active) continue;
 
-                    // Movimiento basado en controles (desde móvil o teclado PC para pruebas)
-                    if (p.connected) {
-                        // Movido por móvil
-                        p.x += p.moveX * p.speed;
-                        p.y += p.moveY * p.speed;
-                    } else {
-                        // Control por teclado para pruebas en PC (solo jugador 0)
-                        if (p.index === 0) {
-                            let moveX = 0, moveY = 0;
-                            if (keys['w']) moveY -= 1;
-                            if (keys['s']) moveY += 1;
-                            if (keys['a']) moveX -= 1;
-                            if (keys['d']) moveX += 1;
-                            if (moveX !== 0 || moveY !== 0) {
-                                const len = Math.hypot(moveX, moveY);
-                                moveX /= len; moveY /= len;
-                            }
-                            p.x += moveX * p.speed;
-                            p.y += moveY * p.speed;
-                        }
-                    }
-
+                    // Movimiento
+                    p.x += p.moveX * p.speed;
+                    p.y += p.moveY * p.speed;
+                    
                     // Límites
                     p.x = Math.max(p.radius, Math.min(CANVAS_SIZE - p.radius, p.x));
                     p.y = Math.max(p.radius, Math.min(CANVAS_SIZE - p.radius, p.y));
 
-                    // Apuntar al enemigo más cercano (IA de apuntado)
-                    let closestDist = Infinity;
+                    // Apuntar al enemigo más cercano
                     let closestEnemy = null;
+                    let closestDist = Infinity;
                     for (let e of enemies) {
-                        const dx = e.x - p.x;
-                        const dy = e.y - p.y;
-                        const dist = Math.hypot(dx, dy);
+                        const dist = Math.hypot(e.x - p.x, e.y - p.y);
                         if (dist < closestDist) {
                             closestDist = dist;
                             closestEnemy = e;
                         }
                     }
+                    
                     if (closestEnemy) {
                         p.angle = Math.atan2(closestEnemy.y - p.y, closestEnemy.x - p.x);
                     }
@@ -436,7 +600,7 @@
                         p.shootCooldown--;
                     }
 
-                    // Escudo (activado con special)
+                    // Escudo
                     p.shield = (p.special && p.powerUp?.type === 'shield');
                 }
 
@@ -451,23 +615,19 @@
                     }
                     for (let j=enemies.length-1; j>=0; j--) {
                         let e = enemies[j];
-                        const dx = b.x - e.x;
-                        const dy = b.y - e.y;
-                        if (Math.hypot(dx, dy) < e.radius + b.radius) {
+                        if (Math.hypot(b.x - e.x, b.y - e.y) < e.radius + b.radius) {
                             e.hp -= 25;
                             bullets.splice(i,1);
                             if (e.hp <= 0) {
                                 enemies.splice(j,1);
-                                if (b.owner !== undefined) players[b.owner].kills++;
                             }
                             break;
                         }
                     }
                 }
 
-                // Mover enemigos hacia jugadores
+                // Enemigos atacan
                 for (let e of enemies) {
-                    // buscar jugador más cercano
                     let target = null;
                     let minDist = Infinity;
                     for (let p of players) {
@@ -485,13 +645,10 @@
                             e.x += (dx / minDist) * e.speed;
                             e.y += (dy / minDist) * e.speed;
                         }
-                        // daño por colisión
                         if (minDist < e.radius + target.radius) {
                             if (!target.shield) {
                                 target.hp = Math.max(0, target.hp - e.damage);
                             }
-                            e.x -= (dx / minDist) * 30;
-                            e.y -= (dy / minDist) * 30;
                         }
                     }
                 }
@@ -501,9 +658,7 @@
                     let pu = powerups[i];
                     for (let p of players) {
                         if (!p.active) continue;
-                        const dx = pu.x - p.x;
-                        const dy = pu.y - p.y;
-                        if (Math.hypot(dx, dy) < pu.radius + p.radius) {
+                        if (Math.hypot(pu.x - p.x, pu.y - p.y) < pu.radius + p.radius) {
                             p.powerUp = {type: pu.type, timeLeft: pu.duration};
                             powerups.splice(i,1);
                             break;
@@ -521,29 +676,21 @@
                         }
                     }
                 }
-
-                // Dibujar canvas (solo en PC)
-                if (ctx) {
-                    drawCanvas();
-                }
-
-                // Actualizar UI del gamepad si existe (para móvil)
-                updateGamepadUI();
-
-                requestAnimationFrame(updateGame);
             }
 
-            function drawCanvas() {
+            function drawGame(ctx) {
                 ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+                
                 // Fondo grid
                 ctx.fillStyle = '#110a1f';
                 ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+                
+                // Grid neon
                 for (let i=0; i<CANVAS_SIZE; i+=40) {
                     ctx.strokeStyle = '#00ff9966';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     ctx.moveTo(i,0); ctx.lineTo(i, CANVAS_SIZE);
-                    ctx.strokeStyle = '#ff00aa33';
                     ctx.stroke();
                     ctx.beginPath();
                     ctx.moveTo(0,i); ctx.lineTo(CANVAS_SIZE, i);
@@ -587,6 +734,8 @@
                     ctx.arc(p.x, p.y, p.radius, 0, 2*Math.PI);
                     ctx.fillStyle = p.color;
                     ctx.fill();
+                    
+                    // Escudo
                     if (p.shield) {
                         ctx.beginPath();
                         ctx.arc(p.x, p.y, p.radius+10, 0, 2*Math.PI);
@@ -594,12 +743,13 @@
                         ctx.lineWidth = 4;
                         ctx.stroke();
                     }
+                    
                     ctx.shadowBlur = 0;
                     ctx.fillStyle = '#000';
                     ctx.font = "22px 'Courier New'";
                     ctx.fillText('🛡️', p.x-14, p.y+10);
                     
-                    // Indicador de conexión (si es controlado por móvil)
+                    // Indicador de conexión
                     if (p.connected) {
                         ctx.fillStyle = '#00ff00';
                         ctx.beginPath();
@@ -618,50 +768,23 @@
                 ctx.shadowBlur = 0;
             }
 
-            // Actualizar la UI del gamepad (vista móvil)
-            function updateGamepadUI() {
-                // Esta función actualiza los indicadores del gamepad
-                // (vida, jugador asignado, etc)
-                const playerIdSpan = document.getElementById('playerIdText');
-                const colorDiv = document.getElementById('playerColor');
-                const healthDots = document.querySelectorAll('.health-dot');
-                
-                // Buscar qué jugador tiene este móvil (simulado: asignamos el primero no conectado)
-                // En un entorno real, esto se manejaría con websockets.
-                // Simulamos que el primer móvil que carga agarra el jugador 0
-                if (!window.myPlayerIndex) {
-                    window.myPlayerIndex = 0; // por defecto
-                    players[0].connected = true;
-                }
-                
-                const myPlayer = players[window.myPlayerIndex];
-                if (myPlayer) {
-                    playerIdSpan.innerText = `JUGADOR ${window.myPlayerIndex+1}`;
-                    colorDiv.style.background = myPlayer.color;
-                    
-                    // actualizar vida (5 dots)
-                    const healthPercent = myPlayer.hp / myPlayer.maxHp;
-                    const activeDots = Math.ceil(healthPercent * 5);
-                    healthDots.forEach((dot, index) => {
-                        if (index < activeDots) {
-                            dot.style.background = '#00ffaa';
-                            dot.style.boxShadow = '0 0 10px #00ffaa';
-                        } else {
-                            dot.style.background = '#333';
-                            dot.style.boxShadow = 'none';
-                        }
-                    });
-                }
-            }
+            gameLoop();
+        }
 
-            // ========== CONTROLES TÁCTILES MATERIAL ==========
+        // ========== CONTROLADOR (MÓVIL) ==========
+        function startController() {
+            // Solicitar conexión a la arena
+            setTimeout(() => {
+                channel.postMessage({ type: 'request_connection' });
+            }, 1000);
+
+            // Configurar joystick
             const joystickBase = document.getElementById('joystickBase');
             const joystickThumb = document.getElementById('joystickThumb');
-            const shootBtn = document.getElementById('actionShoot');
-            const specialBtn = document.getElementById('actionSpecial');
-
+            
             if (joystickBase) {
                 let joystickActive = false;
+                
                 joystickBase.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     joystickActive = true;
@@ -670,6 +793,7 @@
                 joystickBase.addEventListener('touchmove', (e) => {
                     e.preventDefault();
                     if (!joystickActive) return;
+                    
                     const touch = e.touches[0];
                     const rect = joystickBase.getBoundingClientRect();
                     const centerX = rect.left + rect.width/2;
@@ -678,16 +802,24 @@
                     let dy = touch.clientY - centerY;
                     const maxDist = rect.width/2;
                     const dist = Math.hypot(dx, dy);
+                    
                     if (dist > maxDist) {
                         dx = (dx / dist) * maxDist;
                         dy = (dy / dist) * maxDist;
                     }
+                    
                     joystickThumb.style.transform = `translate(${dx}px, ${dy}px)`;
                     
-                    // Actualizar movimiento del jugador asignado
-                    if (players[window.myPlayerIndex]) {
-                        players[window.myPlayerIndex].moveX = dx / maxDist;
-                        players[window.myPlayerIndex].moveY = dy / maxDist;
+                    // Enviar movimiento a la arena
+                    if (myPlayerIndex >= 0) {
+                        channel.postMessage({
+                            type: 'controller_input',
+                            playerIndex: myPlayerIndex,
+                            moveX: dx / maxDist,
+                            moveY: dy / maxDist,
+                            shooting: shooting,
+                            special: special
+                        });
                     }
                 });
 
@@ -695,63 +827,81 @@
                     e.preventDefault();
                     joystickActive = false;
                     joystickThumb.style.transform = `translate(0px, 0px)`;
-                    if (players[window.myPlayerIndex]) {
-                        players[window.myPlayerIndex].moveX = 0;
-                        players[window.myPlayerIndex].moveY = 0;
+                    
+                    if (myPlayerIndex >= 0) {
+                        channel.postMessage({
+                            type: 'controller_input',
+                            playerIndex: myPlayerIndex,
+                            moveX: 0,
+                            moveY: 0,
+                            shooting: shooting,
+                            special: special
+                        });
                     }
-                });
-
-                // Botones
-                shootBtn.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    if (players[window.myPlayerIndex]) players[window.myPlayerIndex].shooting = true;
-                });
-                shootBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    if (players[window.myPlayerIndex]) players[window.myPlayerIndex].shooting = false;
-                });
-
-                specialBtn.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    if (players[window.myPlayerIndex]) players[window.myPlayerIndex].special = true;
-                });
-                specialBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    if (players[window.myPlayerIndex]) players[window.myPlayerIndex].special = false;
                 });
             }
 
-            // Teclado para pruebas en PC
-            const keys = {};
-            window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
-            window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
-
-            // Generar enemigos
-            setInterval(() => {
-                if (enemies.length < 8) {
-                    enemies.push(new Enemy());
+            // Botones
+            let shooting = false;
+            let special = false;
+            
+            const shootBtn = document.getElementById('actionShoot');
+            const specialBtn = document.getElementById('actionSpecial');
+            
+            shootBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                shooting = true;
+                sendInput();
+            });
+            
+            shootBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                shooting = false;
+                sendInput();
+            });
+            
+            specialBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                special = true;
+                sendInput();
+            });
+            
+            specialBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                special = false;
+                sendInput();
+            });
+            
+            function sendInput() {
+                if (myPlayerIndex >= 0) {
+                    channel.postMessage({
+                        type: 'controller_input',
+                        playerIndex: myPlayerIndex,
+                        moveX: 0, // El joystick maneja esto aparte
+                        moveY: 0,
+                        shooting: shooting,
+                        special: special
+                    });
                 }
-            }, 2000);
+            }
+        }
 
-            setInterval(() => {
-                if (powerups.length < 3) {
-                    const type = Math.random() > 0.5 ? 'rapid' : 'shield';
-                    powerups.push(new PowerUp(
-                        Math.random() * 700 + 50,
-                        Math.random() * 700 + 50,
-                        type
-                    ));
+        // Actualizar UI del gamepad
+        function updateGamepadUI(player) {
+            const healthDots = document.querySelectorAll('.health-dot');
+            const healthPercent = player.hp / player.maxHp;
+            const activeDots = Math.ceil(healthPercent * 5);
+            
+            healthDots.forEach((dot, index) => {
+                if (index < activeDots) {
+                    dot.style.background = '#00ffaa';
+                    dot.style.boxShadow = '0 0 10px #00ffaa';
+                } else {
+                    dot.style.background = '#333';
+                    dot.style.boxShadow = 'none';
                 }
-            }, 8000);
-
-            // Iniciar juego
-            window.myPlayerIndex = 0; // este móvil controla al jugador 0
-            players[0].connected = true;
-            updateGame();
-
-            // Mostrar info de conexión
-            console.log('Arena visible en PC. Móviles conéctense a esta IP:', window.location.hostname);
-        })();
+            });
+        }
     </script>
 </body>
 </html>
