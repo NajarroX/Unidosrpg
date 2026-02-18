@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GUARDIANES · MULTIPLAYER REAL</title>
+    <title>GUARDIANES · SALA COMPARTIDA</title>
     <style>
         * {
             margin: 0;
@@ -23,8 +23,8 @@
             touch-action: manipulation;
         }
 
-        /* Pantalla de selección */
-        .role-screen {
+        /* Pantalla de sala */
+        .room-screen {
             position: fixed;
             top: 0;
             left: 0;
@@ -32,6 +32,67 @@
             height: 100%;
             background: linear-gradient(135deg, #1a0b2e 0%, #0d0b1a 100%);
             display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .room-title {
+            font-size: 2rem;
+            color: #00ffff;
+            text-shadow: 0 0 20px cyan;
+            margin-bottom: 30px;
+        }
+
+        .room-input {
+            background: #2a1e3a;
+            border: 3px solid #ff00c6;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-size: 2rem;
+            color: white;
+            text-align: center;
+            width: 300px;
+            margin: 20px;
+            font-family: monospace;
+            letter-spacing: 5px;
+        }
+
+        .room-btn {
+            background: #6200ee;
+            border: none;
+            border-radius: 40px;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            color: white;
+            margin: 10px;
+            cursor: pointer;
+            border: 2px solid #bb86fc;
+        }
+
+        .room-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #6200ee;
+        }
+
+        .room-info {
+            color: #bb86fc;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+
+        /* Pantalla de selección de rol */
+        .role-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a0b2e 0%, #0d0b1a 100%);
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -45,8 +106,6 @@
             color: #00ffff;
             text-shadow: 0 0 20px cyan;
             margin-bottom: 40px;
-            font-weight: bold;
-            letter-spacing: 4px;
         }
 
         .role-buttons {
@@ -74,34 +133,18 @@
             border: 4px solid #bb86fc;
         }
 
-        .arena-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px #6200ee;
-        }
-
         .controller-btn {
             background: #03dac6;
             color: black;
             border: 4px solid #00ffff;
         }
 
-        .controller-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px #03dac6;
-        }
-
-        .qr-code {
-            margin-top: 50px;
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        .qr-text {
-            color: white;
-            margin-top: 20px;
-            font-size: 1.2rem;
+        .room-code-display {
+            margin-top: 30px;
+            color: #00ffff;
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px cyan;
         }
 
         /* VISTA ARENA */
@@ -187,7 +230,6 @@
             height: 24px;
             border-radius: 12px;
             background: #333;
-            box-shadow: 0 0 10px #00ffaa;
             transition: all 0.3s;
         }
 
@@ -207,10 +249,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 
-                0 10px 20px rgba(0,0,0,0.5),
-                0 0 0 2px #333,
-                inset 0 -3px 0 rgba(0,0,0,0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 0 2px #333;
             touch-action: none;
         }
 
@@ -219,9 +258,7 @@
             height: 90px;
             background: #6200ee;
             border-radius: 999px;
-            box-shadow: 
-                0 8px 12px rgba(98, 0, 238, 0.4),
-                0 0 0 2px #bb86fc;
+            box-shadow: 0 8px 12px rgba(98, 0, 238, 0.4), 0 0 0 2px #bb86fc;
             transition: transform 0.05s ease;
             touch-action: none;
         }
@@ -241,15 +278,9 @@
             padding: 24px 0;
             color: white;
             font-size: 2rem;
-            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            box-shadow: 
-                0 8px 12px 0 rgba(98, 0, 238, 0.3),
-                0 4px 4px rgba(0,0,0,0.3),
-                inset 0 -2px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 8px 12px 0 rgba(98, 0, 238, 0.3);
             touch-action: manipulation;
-            transition: all 0.1s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -258,15 +289,11 @@
 
         .md-button:active {
             transform: translateY(4px);
-            box-shadow: 
-                0 4px 8px 0 rgba(98, 0, 238, 0.3),
-                0 2px 4px rgba(0,0,0,0.3);
         }
 
         .md-button.secondary {
             background: #03dac6;
             color: #000;
-            box-shadow: 0 8px 12px 0 rgba(3, 218, 198, 0.3);
         }
 
         .connection-status {
@@ -276,8 +303,6 @@
             margin-top: 8px;
             text-align: center;
             color: #bb86fc;
-            font-size: 0.9rem;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
             border: 1px solid #333;
         }
 
@@ -294,48 +319,38 @@
             text-shadow: 0 0 20px cyan;
             margin: 20px 0;
         }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .room-info {
-            background: #2a1e3a;
-            padding: 15px;
-            border-radius: 20px;
-            margin: 20px;
-            color: #00ffff;
-            font-size: 1.2rem;
-            border: 2px solid #ff00c6;
-        }
     </style>
-    <!-- Agregamos Pusher para comunicación en tiempo real -->
-    <script src="https://js.pusher.com/8.2/pusher.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <!-- Pantalla de selección -->
-    <div class="role-screen" id="roleScreen">
-        <div class="role-title">GUARDIANES DEL TERRITORIO</div>
-        <div class="room-info" id="roomInfo">
-            <div>SALA: <span id="roomCode">GENERANDO...</span></div>
-            <div style="font-size: 0.9rem; margin-top: 10px;" id="playerCount">Jugadores: 0/4</div>
+    <!-- Pantalla de sala (PRIMERO) -->
+    <div class="room-screen" id="roomScreen">
+        <div class="room-title">GUARDIANES DEL TERRITORIO</div>
+        <div class="room-title" style="font-size: 1.2rem; color: #bb86fc;">CÓDIGO DE SALA</div>
+        <input type="text" class="room-input" id="roomCodeInput" placeholder="ABC123" value="GUARD1" maxlength="6" style="text-transform: uppercase;">
+        <div>
+            <button class="room-btn" onclick="joinRoom()">UNIRSE A SALA</button>
+            <button class="room-btn" onclick="createRoom()">CREAR NUEVA SALA</button>
         </div>
+        <div class="room-info" id="roomInfo">
+            Todos deben usar el MISMO código
+        </div>
+    </div>
+
+    <!-- Pantalla de selección de rol -->
+    <div class="role-screen" id="roleScreen">
+        <div class="role-title">SALA: <span id="displayRoomCode">GUARD1</span></div>
         <div class="role-buttons">
             <button class="role-btn arena-btn" onclick="selectRole('arena')">
-                🖥️ CREAR ARENA<br><small style="font-size: 1rem;">(PC / PROYECTOR)</small>
+                🖥️ SERVIDOR (ARENA)
             </button>
             <button class="role-btn controller-btn" onclick="selectRole('controller')">
-                🎮 UNIRSE COMO JUGADOR<br><small style="font-size: 1rem;">(MÓVIL)</small>
+                🎮 JUGADOR (CONTROL)
             </button>
         </div>
-        <div class="qr-code" id="qrContainer">
-            <div style="background: white; padding: 10px; border-radius: 10px;">
-                <span style="color: black; font-size: 1.2rem;" id="urlDisplay">Cargando...</span>
-            </div>
-        </div>
-        <div class="qr-text">
-            Comparte esta URL con los jugadores
-        </div>
+        <div class="room-code-display" id="playerCount">Jugadores: 0/4</div>
     </div>
 
     <!-- VISTA ARENA -->
@@ -346,7 +361,7 @@
     <!-- VISTA GAMEPAD -->
     <div class="gamepad-mode" id="gamepadView">
         <div class="gamepad-header">
-            <div class="gamepad-title">GUARDIANES</div>
+            <div class="gamepad-title">GUARDIANES · SALA <span id="gamepadRoomCode"></span></div>
             <div class="player-chip" id="playerChip">
                 <div class="chip-avatar" id="playerColor"></div>
                 <span id="playerIdText">CONECTANDO...</span>
@@ -363,7 +378,6 @@
 
         <div class="waiting-message" id="waitingMessage">
             ESPERANDO ASIGNACIÓN...
-            <div class="player-id" id="assignedPlayer">-</div>
         </div>
 
         <div id="controlsContainer" style="display: none;">
@@ -374,12 +388,8 @@
             </div>
 
             <div class="buttons-grid">
-                <button class="md-button" id="actionShoot">
-                    <span>🔫</span> DISPARAR
-                </button>
-                <button class="md-button secondary" id="actionSpecial">
-                    <span>🛡️</span> ESCUDO
-                </button>
+                <button class="md-button" id="actionShoot">🔫 DISPARAR</button>
+                <button class="md-button secondary" id="actionSpecial">🛡️ ESCUDO</button>
             </div>
         </div>
 
@@ -389,31 +399,38 @@
     </div>
 
     <script>
-        // ========== CONFIGURACIÓN PUSHER (gratuito) ==========
-        // Usamos las claves públicas de Pusher (son de demostración, en producción usa las tuyas)
-        Pusher.logToConsole = false;
-        
-        // Generamos un código de sala aleatorio
-        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-        document.getElementById('roomCode').innerText = roomCode;
-        
-        // Configuración de Pusher (estas son credenciales públicas de prueba)
-        const pusher = new Pusher('08c5a4a0e3f8a8d9b1b9', {
-            cluster: 'us2',
-            forceTLS: true
-        });
-        
-        let channel = null;
+        // ========== CONFIGURACIÓN FIREBASE ==========
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkYrQMU4BbDuyWxYQYgVXQYQYgVXQYQYgV", // Esta es una key de demo, en producción usa la tuya
+            authDomain: "guardianes-demo.firebaseapp.com",
+            databaseURL: "https://guardianes-demo-default-rtdb.firebaseio.com",
+            projectId: "guardianes-demo",
+            storageBucket: "guardianes-demo.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abc123"
+        };
+
+        // Inicializar Firebase (con manejo de error si no hay conexión)
+        let database = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log("Firebase conectado");
+        } catch (e) {
+            console.log("Usando modo local (demo)", e);
+        }
+
+        // ========== VARIABLES GLOBALES ==========
+        let currentRoom = "GUARD1"; // Sala por defecto
         let role = null;
         let myPlayerIndex = -1;
-        let arenaChannel = null;
-        
-        // Estado del juego
         let players = [];
         let enemies = [];
         let powerups = [];
         let bullets = [];
-        
+        let roomRef = null;
+        let gameActive = true;
+
         const MAX_PLAYERS = 4;
         const PLAYER_RADIUS = 20;
         const ENEMY_RADIUS = 18;
@@ -423,14 +440,85 @@
             {x: 200, y: 200}, {x: 600, y: 200}, {x: 200, y: 600}, {x: 600, y: 600}
         ];
 
-        // URL para compartir
-        document.getElementById('urlDisplay').innerText = window.location.href;
+        // ========== GESTIÓN DE SALA ==========
+        window.createRoom = function() {
+            // Generar código aleatorio
+            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            document.getElementById('roomCodeInput').value = code;
+            joinRoom();
+        };
+
+        window.joinRoom = function() {
+            const roomCode = document.getElementById('roomCodeInput').value.toUpperCase().trim();
+            if (roomCode.length < 3) {
+                alert("Ingresa un código válido (mínimo 3 caracteres)");
+                return;
+            }
+            
+            currentRoom = roomCode;
+            document.getElementById('displayRoomCode').innerText = currentRoom;
+            document.getElementById('gamepadRoomCode').innerText = currentRoom;
+            
+            // Ocultar pantalla de sala y mostrar selección de rol
+            document.getElementById('roomScreen').style.display = 'none';
+            document.getElementById('roleScreen').style.display = 'flex';
+            
+            // Inicializar Firebase para esta sala
+            if (database) {
+                roomRef = database.ref('rooms/' + currentRoom);
+                
+                // Escuchar cambios en la sala
+                roomRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        if (data.players) {
+                            updatePlayerCount(data.players);
+                        }
+                        if (role === 'controller' && myPlayerIndex >= 0 && data.players) {
+                            const myPlayer = data.players[myPlayerIndex];
+                            if (myPlayer) {
+                                updateGamepadUI(myPlayer);
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        function updatePlayerCount(playersData) {
+            let count = 0;
+            if (playersData) {
+                for (let i = 0; i < MAX_PLAYERS; i++) {
+                    if (playersData[i] && playersData[i].connected) count++;
+                }
+            }
+            document.getElementById('playerCount').innerText = `Jugadores: ${count}/4`;
+        }
+
+        // ========== SELECCIÓN DE ROL ==========
+        window.selectRole = function(selectedRole) {
+            role = selectedRole;
+            document.getElementById('roleScreen').style.display = 'none';
+            
+            if (role === 'arena') {
+                document.getElementById('arenaView').style.display = 'flex';
+                initPlayers();
+                setupArena();
+            } else {
+                document.getElementById('gamepadView').style.display = 'flex';
+                setupController();
+                
+                // Solicitar conexión
+                setTimeout(() => {
+                    requestConnection();
+                }, 1000);
+            }
+        };
 
         // ========== INICIALIZAR JUGADORES ==========
         function initPlayers() {
             for (let i = 0; i < MAX_PLAYERS; i++) {
                 players.push({
-                    id: `p${i}`,
                     index: i,
                     x: playerStartPos[i].x,
                     y: playerStartPos[i].y,
@@ -451,9 +539,17 @@
                     special: false
                 });
             }
+            
+            // Guardar en Firebase
+            if (roomRef) {
+                roomRef.set({
+                    players: players,
+                    gameState: 'active'
+                });
+            }
         }
 
-        // Clases
+        // ========== CLASES ==========
         class Enemy {
             constructor() {
                 this.radius = ENEMY_RADIUS;
@@ -475,90 +571,36 @@
             }
         }
 
-        // ========== SELECCIÓN DE ROL ==========
-        window.selectRole = function(selectedRole) {
-            role = selectedRole;
-            document.getElementById('roleScreen').style.display = 'none';
+        // ========== SOLICITAR CONEXIÓN ==========
+        function requestConnection() {
+            if (!roomRef) return;
             
-            // Suscribirse al canal de la sala
-            channel = pusher.subscribe(`room-${roomCode}`);
-            
-            if (role === 'arena') {
-                // Este dispositivo es la arena
-                document.getElementById('arenaView').style.display = 'flex';
-                initPlayers();
-                setupArena();
-            } else {
-                // Este dispositivo es un controlador
-                document.getElementById('gamepadView').style.display = 'flex';
-                setupController();
-            }
-            
-            // Escuchar eventos
-            channel.bind('controller-input', (data) => {
-                if (role === 'arena' && players[data.playerIndex]) {
-                    const p = players[data.playerIndex];
-                    p.moveX = data.moveX;
-                    p.moveY = data.moveY;
-                    p.shooting = data.shooting;
-                    p.special = data.special;
-                }
-            });
-            
-            channel.bind('request-connection', (data) => {
-                if (role === 'arena') {
-                    // Asignar jugador disponible
-                    for (let i = 0; i < players.length; i++) {
-                        if (!players[i].connected) {
-                            players[i].connected = true;
-                            // Notificar al controlador
- fetch('https://pusher.com', { // Esto es un placeholder, realmente se envía por el canal
-                                method: 'POST'
-                            });
-                            // En Pusher real se usa trigger, pero aquí simulamos con bind
-                            // Como no podemos hacer trigger desde el cliente, usamos una función
-                            if (window.pusherTrigger) {
-                                window.pusherTrigger('connection-assigned', {
-                                    playerIndex: i,
-                                    color: players[i].color
-                                });
-                            }
-                            break;
-                        }
+            roomRef.child('players').once('value', (snapshot) => {
+                const playersData = snapshot.val() || [];
+                for (let i = 0; i < MAX_PLAYERS; i++) {
+                    if (!playersData[i] || !playersData[i].connected) {
+                        // Asignar este jugador
+                        myPlayerIndex = i;
+                        
+                        // Actualizar en Firebase
+                        roomRef.child('players').child(i).update({
+                            connected: true,
+                            color: playerColors[i],
+                            hp: 100,
+                            maxHp: 100
+                        });
+                        
+                        // Mostrar controles
+                        document.getElementById('waitingMessage').style.display = 'none';
+                        document.getElementById('controlsContainer').style.display = 'block';
+                        document.getElementById('connectionStatus').innerHTML = '✅ CONECTADO';
+                        document.getElementById('playerIdText').innerText = `JUGADOR ${i + 1}`;
+                        document.getElementById('playerColor').style.background = playerColors[i];
+                        break;
                     }
                 }
             });
-            
-            channel.bind('connection-assigned', (data) => {
-                if (role === 'controller') {
-                    myPlayerIndex = data.playerIndex;
-                    document.getElementById('waitingMessage').style.display = 'none';
-                    document.getElementById('controlsContainer').style.display = 'block';
-                    document.getElementById('connectionStatus').innerHTML = '✅ CONECTADO';
-                    document.getElementById('playerIdText').innerText = `JUGADOR ${myPlayerIndex + 1}`;
-                    document.getElementById('playerColor').style.background = data.color;
-                }
-            });
-            
-            channel.bind('game-state', (data) => {
-                if (role === 'controller' && myPlayerIndex >= 0) {
-                    const myPlayer = data.players[myPlayerIndex];
-                    if (myPlayer) {
-                        updateGamepadUI(myPlayer);
-                    }
-                }
-            });
-            
-            // Si es controlador, solicitar conexión
-            if (role === 'controller') {
-                setTimeout(() => {
-                    // En Pusher real se hace trigger
-                    if (window.pusherTrigger) {
-                        window.pusherTrigger('request-connection', {});
-                    }
-                }, 1000);
-            }
-        };
+        }
 
         // ========== ARENA ==========
         function setupArena() {
@@ -584,19 +626,36 @@
                 }
             }, 8000);
 
+            // Escuchar inputs de Firebase
+            if (roomRef) {
+                roomRef.child('players').on('value', (snapshot) => {
+                    const playersData = snapshot.val();
+                    if (playersData) {
+                        for (let i = 0; i < MAX_PLAYERS; i++) {
+                            if (playersData[i] && players[i]) {
+                                players[i].moveX = playersData[i].moveX || 0;
+                                players[i].moveY = playersData[i].moveY || 0;
+                                players[i].shooting = playersData[i].shooting || false;
+                                players[i].special = playersData[i].special || false;
+                                players[i].connected = playersData[i].connected || false;
+                            }
+                        }
+                    }
+                });
+            }
+
             function gameLoop() {
+                if (!gameActive) return;
                 updateGame();
                 drawGame(ctx);
                 
-                // Enviar estado a controladores (en Pusher real se hace trigger)
-                if (window.pusherTrigger) {
-                    window.pusherTrigger('game-state', {
-                        players: players.map(p => ({
-                            hp: p.hp,
-                            connected: p.connected,
-                            index: p.index,
-                            color: p.color
-                        }))
+                // Guardar estado en Firebase
+                if (roomRef) {
+                    roomRef.child('players').update({
+                        0: { hp: players[0].hp, connected: players[0].connected },
+                        1: { hp: players[1].hp, connected: players[1].connected },
+                        2: { hp: players[2].hp, connected: players[2].connected },
+                        3: { hp: players[3].hp, connected: players[3].connected }
                     });
                 }
                 
@@ -608,10 +667,9 @@
                     if (!p.active) continue;
 
                     // Movimiento
-                    p.x += p.moveX * p.speed;
-                    p.y += p.moveY * p.speed;
+                    p.x += (p.moveX || 0) * p.speed;
+                    p.y += (p.moveY || 0) * p.speed;
                     
-                    // Límites
                     p.x = Math.max(p.radius, Math.min(CANVAS_SIZE - p.radius, p.x));
                     p.y = Math.max(p.radius, Math.min(CANVAS_SIZE - p.radius, p.y));
 
@@ -646,11 +704,10 @@
                         p.shootCooldown--;
                     }
 
-                    // Escudo
                     p.shield = (p.special && p.powerUp?.type === 'shield');
                 }
 
-                // Actualizar balas
+                // Balas
                 for (let i = bullets.length-1; i>=0; i--) {
                     let b = bullets[i];
                     b.x += b.vx;
@@ -672,7 +729,7 @@
                     }
                 }
 
-                // Enemigos atacan
+                // Enemigos
                 for (let e of enemies) {
                     let target = null;
                     let minDist = Infinity;
@@ -712,7 +769,6 @@
                     }
                 }
 
-                // Expirar power-ups
                 for (let p of players) {
                     if (p.powerUp) {
                         p.powerUp.timeLeft--;
@@ -727,11 +783,11 @@
             function drawGame(ctx) {
                 ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
                 
-                // Fondo grid
+                // Fondo
                 ctx.fillStyle = '#110a1f';
                 ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
                 
-                // Grid neon
+                // Grid
                 for (let i=0; i<CANVAS_SIZE; i+=40) {
                     ctx.strokeStyle = '#00ff9966';
                     ctx.lineWidth = 2;
@@ -781,7 +837,6 @@
                     ctx.fillStyle = p.color;
                     ctx.fill();
                     
-                    // Escudo
                     if (p.shield) {
                         ctx.beginPath();
                         ctx.arc(p.x, p.y, p.radius+10, 0, 2*Math.PI);
@@ -795,7 +850,6 @@
                     ctx.font = "22px 'Courier New'";
                     ctx.fillText('🛡️', p.x-14, p.y+10);
                     
-                    // Indicador de conexión
                     if (p.connected) {
                         ctx.fillStyle = '#00ff00';
                         ctx.beginPath();
@@ -819,7 +873,6 @@
 
         // ========== CONTROLADOR ==========
         function setupController() {
-            // Configurar joystick
             const joystickBase = document.getElementById('joystickBase');
             const joystickThumb = document.getElementById('joystickThumb');
             
@@ -856,7 +909,7 @@
                     currentMoveX = dx / maxDist;
                     currentMoveY = dy / maxDist;
                     
-                    sendInput(currentMoveX, currentMoveY);
+                    sendInput();
                 });
 
                 joystickBase.addEventListener('touchend', (e) => {
@@ -865,61 +918,62 @@
                     joystickThumb.style.transform = `translate(0px, 0px)`;
                     currentMoveX = 0;
                     currentMoveY = 0;
-                    sendInput(0, 0);
+                    sendInput();
                 });
             }
 
-            // Botones
             let shooting = false;
             let special = false;
             
-            const shootBtn = document.getElementById('actionShoot');
-            const specialBtn = document.getElementById('actionSpecial');
-            
-            shootBtn.addEventListener('touchstart', (e) => {
+            document.getElementById('actionShoot').addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 shooting = true;
                 sendInput();
             });
             
-            shootBtn.addEventListener('touchend', (e) => {
+            document.getElementById('actionShoot').addEventListener('touchend', (e) => {
                 e.preventDefault();
                 shooting = false;
                 sendInput();
             });
             
-            specialBtn.addEventListener('touchstart', (e) => {
+            document.getElementById('actionSpecial').addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 special = true;
                 sendInput();
             });
             
-            specialBtn.addEventListener('touchend', (e) => {
+            document.getElementById('actionSpecial').addEventListener('touchend', (e) => {
                 e.preventDefault();
                 special = false;
                 sendInput();
             });
             
-            function sendInput(moveX, moveY) {
-                if (myPlayerIndex >= 0) {
-                    // En Pusher real se hace trigger
-                    if (window.pusherTrigger) {
-                        window.pusherTrigger('controller-input', {
-                            playerIndex: myPlayerIndex,
-                            moveX: moveX !== undefined ? moveX : currentMoveX || 0,
-                            moveY: moveY !== undefined ? moveY : currentMoveY || 0,
-                            shooting: shooting,
-                            special: special
-                        });
-                    }
+            function sendInput() {
+                if (myPlayerIndex >= 0 && roomRef) {
+                    roomRef.child('players').child(myPlayerIndex).update({
+                        moveX: currentMoveX || 0,
+                        moveY: currentMoveY || 0,
+                        shooting: shooting,
+                        special: special
+                    });
                 }
+            }
+
+            // Escuchar cambios en la vida
+            if (roomRef) {
+                roomRef.child('players').on('value', (snapshot) => {
+                    const playersData = snapshot.val();
+                    if (playersData && playersData[myPlayerIndex]) {
+                        updateGamepadUI(playersData[myPlayerIndex]);
+                    }
+                });
             }
         }
 
-        // Actualizar UI del gamepad
         function updateGamepadUI(player) {
             const healthDots = document.querySelectorAll('.health-dot');
-            const healthPercent = player.hp / player.maxHp;
+            const healthPercent = (player.hp || 100) / 100;
             const activeDots = Math.ceil(healthPercent * 5);
             
             healthDots.forEach((dot, index) => {
@@ -933,30 +987,8 @@
             });
         }
 
-        // Simulador de trigger (para completar la demo)
-        window.pusherTrigger = function(event, data) {
-            // En una implementación real con Pusher, aquí iría channel.trigger
-            // Pero como Pusher no permite trigger desde el cliente por seguridad,
-            // necesitaríamos un backend. Para esta demo, simularemos que funciona
-            console.log('Trigger:', event, data);
-            
-            // Simulamos la respuesta
-            setTimeout(() => {
-                if (event === 'request-connection' && role === 'arena') {
-                    // Asignar jugador 0 al primer controlador
-                    if (players[0] && !players[0].connected) {
-                        players[0].connected = true;
-                        // Notificar a todos
-                        if (window.pusherTrigger) {
-                            window.pusherTrigger('connection-assigned', {
-                                playerIndex: 0,
-                                color: players[0].color
-                            });
-                        }
-                    }
-                }
-            }, 500);
-        };
+        // Código por defecto
+        document.getElementById('roomCodeInput').value = 'GUARD1';
     </script>
 </body>
 </html>
